@@ -28,6 +28,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
     $ docker-compose up -d
     $ docker-compose run ruby rspec .
+    $ docker-compose run ruby rubocop -a
 
 ## Contributing
 
