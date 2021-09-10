@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'redis-objects'
 require_relative 'redis_object_counter/version'
 
 module RedisObjectCounter

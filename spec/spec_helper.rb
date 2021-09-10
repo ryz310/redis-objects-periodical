@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'simplecov'
+SimpleCov.start
+
+require 'pry'
 require 'redis_object_counter'
 
 RSpec.configure do |config|
@@ -11,5 +15,13 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before :suite do
+    Redis::Objects.redis = Redis.new(host: 'redis', port: 6379)
+  end
+
+  config.after do
+    Redis.new(host: 'redis', port: 6379).flushdb
   end
 end
