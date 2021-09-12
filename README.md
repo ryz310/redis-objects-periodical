@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/redis-object-daily-counter.svg)](https://badge.fury.io/rb/redis-object-daily-counter)
+
 # Redis::Objects::Daily::Counter
 
 ## Installation
