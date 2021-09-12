@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'redis/daily_counter'
 class Redis
   module Objects
     module DailyCounters

@@ -14,9 +14,6 @@ Layout/LineLength:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
-
-Metrics/BlockLength:
-  Exclude:
     - 'redis-object-daily-counter.gemspec'
 
 Metrics/MethodLength:

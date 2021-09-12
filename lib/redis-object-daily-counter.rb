@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 require 'redis-objects'
-require_relative 'redis/daily_counter'
-require_relative 'redis/objects/daily_counters'
-require_relative 'redis/objects/daily-counter/version'
 
 class Redis
+  autoload :DailyCounter, 'redis/daily_counter'
+
   module Objects
+    autoload :DailyCounters, 'redis/objects/daily_counters'
+
     class << self
       alias original_included included
 
