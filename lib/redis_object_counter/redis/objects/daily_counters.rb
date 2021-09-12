@@ -10,10 +10,7 @@ class Redis
         end
       end
 
-      # Class methods that appear in your class when you include Redis::Objects.
       module ClassMethods
-        # Define a new counter.  It will function like a regular instance
-        # method, so it can be used alongside ActiveRecord, DataMapper, etc.
         def daily_counter(name, options = {})
           options[:start] ||= 0
           options[:type]  ||= options[:start] == 0 ? :increment : :decrement
