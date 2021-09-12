@@ -75,7 +75,17 @@ RSpec.describe RedisObjectCounter do
 
     describe '#values' do
       it do
-        expect(instance.my_posts.values(3)).to eq [10, 11, 12]
+        date_range = Date.new(2021, 4, 1)..Date.new(2021, 4, 2)
+        expect(instance.my_posts.values(date_range)).to eq [10, 11]
+      end
+    end
+
+    describe '#delete' do
+      it do
+        date = Date.new(2021, 4, 2)
+        expect { instance.my_posts.delete(date) }
+          .to change { instance.my_posts.get_value(date) }
+          .from(11).to(0)
       end
     end
   end
