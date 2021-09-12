@@ -18,7 +18,36 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```rb
+class Homepage
+  include Redis::Objects
+
+  daily_counter :pv_count
+
+  def id
+    1
+  end
+end
+
+# 2021-04-01
+hp = Homepage.new
+hp.id # 1
+
+hp.pv_count.increment
+hp.pv_count.increment
+hp.pv_count.increment
+puts hp.pv_count.value # 3
+
+# 2021-04-02 (next day)
+puts hp.pv_count.value # 0
+hp.pv_count.increment
+hp.pv_count.increment
+puts hp.pv_count.value # 2
+
+start_date = Date.new(2021, 4, 1)
+end_date = Date.new(2021, 4, 2)
+hp.pv_count.range(start_date, end_date) # [3, 2]
+```
 
 ## Development
 
