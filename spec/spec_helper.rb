@@ -4,6 +4,7 @@ require 'simplecov'
 SimpleCov.start
 
 require 'pry'
+require 'timecop'
 require 'redis_object_counter'
 
 RSpec.configure do |config|
@@ -23,5 +24,6 @@ RSpec.configure do |config|
 
   config.after do
     Redis.new(host: 'redis', port: 6379).flushdb
+    Timecop.return
   end
 end

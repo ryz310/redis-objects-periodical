@@ -27,6 +27,8 @@ RSpec.describe RedisObjectCounter do
   end
 
   describe 'Redis::Objects::DailyCounters' do
+    before { stub_const 'MockClass', mock_class }
+
     let(:mock_class) do
       Class.new do
         include Redis::Objects
@@ -39,19 +41,27 @@ RSpec.describe RedisObjectCounter do
       end
     end
 
-    let(:instance) { mock_class.new }
+    let(:instance) { MockClass.new }
 
     it do
+      Timecop.travel(Time.local(2021, 4, 1))
       instance.my_posts.increment
       instance.my_posts.decrement
       instance.my_posts.increment
       instance.my_posts.increment
       expect(instance.my_posts.value).to eq 2
+      Timecop.travel(Time.local(2021, 4, 2))
+      expect(instance.my_posts.value).to eq 0
     end
 
     it do
+      Timecop.travel(Time.local(2021, 4, 1))
       instance.my_posts.increment
-      expect(instance.redis.get(':1:my_posts:2021-09-12').to_i).to eq 1
+      Timecop.travel(Time.local(2021, 4, 2))
+      instance.my_posts.increment
+      instance.my_posts.increment
+      expect(instance.redis.get('mock_class:1:my_posts:2021-04-01').to_i).to eq 1
+      expect(instance.redis.get('mock_class:1:my_posts:2021-04-02').to_i).to eq 2
     end
   end
 end
