@@ -30,7 +30,7 @@ RSpec.describe RedisObjectCounter do
     let(:mock_class) do
       Class.new do
         include Redis::Objects
-        include Redis::Objects::DailyCounters
+
         daily_counter :my_posts
 
         def id

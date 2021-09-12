@@ -9,3 +9,16 @@ module RedisObjectCounter
   class Error < StandardError; end
   # Your code goes here...
 end
+
+class Redis
+  module Objects
+    class << self
+      alias original_included included
+
+      def included(klass)
+        original_included(klass)
+        klass.send :include, Redis::Objects::DailyCounters
+      end
+    end
+  end
+end
