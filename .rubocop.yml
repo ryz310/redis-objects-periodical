@@ -17,7 +17,7 @@ Metrics/BlockLength:
 
 Metrics/BlockLength:
   Exclude:
-    - 'redis_object_counter.gemspec'
+    - 'redis-object-daily-counter.gemspec'
 
 Metrics/MethodLength:
   Max: 15

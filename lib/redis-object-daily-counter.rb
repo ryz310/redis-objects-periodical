@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
 require 'redis-objects'
-require_relative 'redis_object_counter/redis/daily_counter'
-require_relative 'redis_object_counter/redis/objects/daily_counters'
-require_relative 'redis_object_counter/version'
-
-module RedisObjectCounter
-  class Error < StandardError; end
-  # Your code goes here...
-end
+require_relative 'redis/daily_counter'
+require_relative 'redis/objects/daily_counters'
+require_relative 'redis/objects/daily-counter/version'
 
 class Redis
   module Objects
@@ -17,6 +12,8 @@ class Redis
 
       def included(klass)
         original_included(klass)
+
+        # Pull in each object type
         klass.send :include, Redis::Objects::DailyCounters
       end
     end

@@ -2,5 +2,5 @@
 
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in redis_object_counter.gemspec
+# Specify your gem's dependencies in redis-object-daily-counter.gemspec
 gemspec

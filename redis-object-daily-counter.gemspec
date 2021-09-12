@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'lib/redis_object_counter/version'
+require_relative 'lib/redis/objects/daily-counter/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'redis_object_counter'
-  spec.version       = RedisObjectCounter::VERSION
-  spec.authors       = ['Ryosuke Sato']
+  spec.name          = 'redis-object-daily-counter'
+  spec.version       = Redis::Objects::Daily::Counter::VERSION
+  spec.authors       = ['ryz310']
   spec.email         = ['ryz310@gmail.com']
 
   spec.summary       = 'WIP'

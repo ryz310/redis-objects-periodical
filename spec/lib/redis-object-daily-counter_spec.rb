@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe RedisObjectCounter do
+RSpec.describe Redis::Objects::Daily::Counter do
   it 'has a version number' do
-    expect(RedisObjectCounter::VERSION).not_to be nil
+    expect(Redis::Objects::Daily::Counter::VERSION).not_to be nil
   end
 
   describe 'Redis::Objects' do
