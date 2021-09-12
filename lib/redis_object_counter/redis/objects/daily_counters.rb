@@ -21,8 +21,8 @@ class Redis
 
           mod = Module.new do
             define_method(name) do
-              Redis::Counter.new(
-                redis_daily_field_key(name), redis_field_redis(name), redis_options(name)
+              Redis::DailyCounter.new(
+                redis_field_key(name), redis_field_redis(name), redis_options(name)
               )
             end
           end
@@ -42,10 +42,6 @@ class Redis
 
       # Instance methods that appear in your class when you include Redis::Objects.
       module InstanceMethods
-        def redis_daily_field_key(name, date = Date.today) #:nodoc:
-          id = send(self.class.redis_id_field)
-          "#{self.class.redis_field_key(name, id, self)}:#{date}"
-        end
       end
     end
   end
