@@ -8,16 +8,14 @@ Gem::Specification.new do |spec|
   spec.authors       = ['ryz310']
   spec.email         = ['ryz310@gmail.com']
 
-  spec.summary       = 'WIP'
-  spec.description   = 'WIP'
-  spec.homepage      = 'https://github.com/ryz310'
+  spec.summary       = 'Daily counter within Redis::Objects'
+  spec.description   = 'Daily counter within Redis::Objects. Works with any class or ORM.'
+  spec.homepage      = 'https://github.com/ryz310/redis-object-daily-counter'
   spec.license       = 'MIT'
 
-  spec.metadata['allowed_push_host'] = 'WIP'
-
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://github.com/ryz310'
-  spec.metadata['changelog_uri'] = 'https://github.com/ryz310'
+  spec.metadata['source_code_uri'] = 'https://github.com/ryz310/redis-object-daily-counter'
+  spec.metadata['changelog_uri'] = 'https://github.com/ryz310/redis-object-daily-counter/blob/master/CHANGELOG.md'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
