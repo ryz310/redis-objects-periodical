@@ -27,8 +27,6 @@ RSpec.describe RedisObjectCounter do
   end
 
   describe 'Redis::Objects::DailyCounters' do
-    before { stub_const 'MockClass', mock_class }
-
     let(:mock_class) do
       Class.new do
         include Redis::Objects
@@ -43,46 +41,41 @@ RSpec.describe RedisObjectCounter do
 
     let(:instance) { MockClass.new }
 
-    it do
+    before do
+      stub_const 'MockClass', mock_class
       Timecop.travel(Time.local(2021, 4, 1))
-      instance.my_posts.increment
-      instance.my_posts.decrement
-      instance.my_posts.increment(2)
-      expect(instance.my_posts.value).to eq 2
+      instance.my_posts.increment(10)
       Timecop.travel(Time.local(2021, 4, 2))
-      expect(instance.my_posts.value).to eq 0
+      instance.my_posts.increment(11)
+      Timecop.travel(Time.local(2021, 4, 3))
+      instance.my_posts.increment(12)
     end
 
-    it do
-      Timecop.travel(Time.local(2021, 4, 1))
-      instance.my_posts.increment
-      Timecop.travel(Time.local(2021, 4, 2))
-      instance.my_posts.increment(3)
-      expect(instance.redis.get('mock_class:1:my_posts:2021-04-01').to_i).to eq 1
-      expect(instance.redis.get('mock_class:1:my_posts:2021-04-02').to_i).to eq 3
-    end
-
-    describe '#sum' do
+    describe 'key' do
       it do
-        Timecop.travel(Time.local(2021, 4, 1))
-        instance.my_posts.increment(10)
-        Timecop.travel(Time.local(2021, 4, 2))
-        instance.my_posts.increment(11)
-        Timecop.travel(Time.local(2021, 4, 3))
-        instance.my_posts.increment(12)
-        expect(instance.my_posts.sum(3)).to eq 33
+        expect(instance.redis.get('mock_class:1:my_posts:2021-04-01').to_i).to eq 10
+        expect(instance.redis.get('mock_class:1:my_posts:2021-04-02').to_i).to eq 11
+        expect(instance.redis.get('mock_class:1:my_posts:2021-04-03').to_i).to eq 12
       end
     end
 
-    describe '#average' do
+    describe '#value' do
       it do
-        Timecop.travel(Time.local(2021, 4, 1))
-        instance.my_posts.increment(10)
-        Timecop.travel(Time.local(2021, 4, 2))
-        instance.my_posts.increment(11)
-        Timecop.travel(Time.local(2021, 4, 3))
-        instance.my_posts.increment(12)
-        expect(instance.my_posts.average(3)).to eq 11.0
+        expect(instance.my_posts.value).to eq 12
+      end
+    end
+
+    describe '#get_value' do
+      it do
+        expect(instance.my_posts.get_value(Date.new(2021, 4, 1))).to eq 10
+        expect(instance.my_posts.get_value(Date.new(2021, 4, 2))).to eq 11
+        expect(instance.my_posts.get_value(Date.new(2021, 4, 3))).to eq 12
+      end
+    end
+
+    describe '#values' do
+      it do
+        expect(instance.my_posts.values(3)).to eq [10, 11, 12]
       end
     end
   end

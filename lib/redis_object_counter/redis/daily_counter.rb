@@ -4,26 +4,28 @@ class Redis
   class DailyCounter < Counter
     def initialize(key, *args)
       @original_key = key
-      @date = Date.today
-      super(redis_daily_field_key(date), *args)
+      @current_date = Date.today
+      super(redis_daily_field_key(current_date), *args)
     end
 
-    attr_reader :original_key, :date
+    attr_reader :original_key, :current_date
 
-    def sum(duration)
-      ((date - duration)..date).sum do |day|
-        redis.get(redis_daily_field_key(day)).to_i
-      end
+    def get_value(date)
+      redis.get(redis_daily_field_key(date)).to_i
     end
 
-    def average(duration)
-      sum(duration) / duration.to_f
+    def values(duration)
+      date_range(duration).map { |date| get_value(date) }
     end
 
     private
 
+    def date_range(duration)
+      (current_date - duration + 1)..current_date
+    end
+
     def redis_daily_field_key(date)
-      [original_key, date].flatten.join(':')
+      [original_key, date.to_date].flatten.join(':')
     end
   end
 end
