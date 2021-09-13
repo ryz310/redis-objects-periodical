@@ -1,4 +1,4 @@
-[![Gem Version](https://badge.fury.io/rb/redis-object-daily-counter.svg)](https://badge.fury.io/rb/redis-object-daily-counter)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-object-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-object-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-object-daily-counter.svg)](https://badge.fury.io/rb/redis-object-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/maintainability)](https://codeclimate.com/github/ryz310/redis-object-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/test_coverage)](https://codeclimate.com/github/ryz310/redis-object-daily-counter/test_coverage) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ryz310/redis-object-daily-counter)](https://dependabot.com)
 
 # Redis::Objects::Daily::Counter
 

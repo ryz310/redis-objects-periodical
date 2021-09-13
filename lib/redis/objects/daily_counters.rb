@@ -12,9 +12,9 @@ class Redis
       end
 
       module ClassMethods
-        def daily_counter(name, options = {})
+        def daily_counter(name, options = {}) # rubocop:disable Metrics/MethodLength
           options[:start] ||= 0
-          options[:type]  ||= options[:start] == 0 ? :increment : :decrement
+          options[:type]  ||= (options[:start]).zero? ? :increment : :decrement
           redis_objects[name.to_sym] = options.merge(type: :counter)
 
           mod = Module.new do
