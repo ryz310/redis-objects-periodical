@@ -5,7 +5,7 @@ RSpec.describe Redis::DailyCounter do
     Class.new do
       include Redis::Objects
 
-      daily_counter :pv
+      daily_counter :pv, expiration: 2_678_400 # about a month
 
       def id
         1

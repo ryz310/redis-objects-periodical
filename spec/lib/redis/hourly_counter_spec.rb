@@ -5,7 +5,7 @@ RSpec.describe Redis::HourlyCounter do
     Class.new do
       include Redis::Objects
 
-      hourly_counter :pv
+      hourly_counter :pv, expiration: 86_400 # about a day
 
       def id
         1
