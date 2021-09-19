@@ -17,5 +17,8 @@ changelog:
   categories:
     - Feature
     - Bugfix
+    - Security
     - Breaking Change
+    - Rubocop Challenge
+    - Dependabot
     - Misc
