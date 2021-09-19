@@ -25,6 +25,24 @@ RSpec.describe Redis::DailyCounter do
     homepage.pv.increment(12)
   end
 
+  context 'with global: true' do
+    let(:mock_class) do
+      Class.new do
+        include Redis::Objects
+
+        daily_counter :pv, global: true
+      end
+    end
+
+    let(:homepage) { Homepage }
+
+    it 'supports class-level increment/decrement of global counters' do
+      expect(homepage.redis.get('homepage::pv:2021-04-01').to_i).to eq 10
+      expect(homepage.redis.get('homepage::pv:2021-04-02').to_i).to eq 11
+      expect(homepage.redis.get('homepage::pv:2021-04-03').to_i).to eq 12
+    end
+  end
+
   describe 'timezone' do
     before { Timecop.travel(Time.local(2021, 4, 4)) }
 

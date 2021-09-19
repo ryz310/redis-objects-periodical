@@ -25,6 +25,24 @@ RSpec.describe Redis::MonthlyCounter do
     homepage.pv.increment(12)
   end
 
+  context 'with global: true' do
+    let(:mock_class) do
+      Class.new do
+        include Redis::Objects
+
+        monthly_counter :pv, global: true
+      end
+    end
+
+    let(:homepage) { Homepage }
+
+    it 'supports class-level increment/decrement of global counters' do
+      expect(homepage.redis.get('homepage::pv:2021-04').to_i).to eq 10
+      expect(homepage.redis.get('homepage::pv:2021-05').to_i).to eq 11
+      expect(homepage.redis.get('homepage::pv:2021-06').to_i).to eq 12
+    end
+  end
+
   describe 'timezone' do
     before { Timecop.travel(Time.local(2021, 7, 1)) }
 
