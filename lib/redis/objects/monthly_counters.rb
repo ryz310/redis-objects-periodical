@@ -3,7 +3,7 @@
 require 'redis/daily_counter'
 class Redis
   module Objects
-    module DailyCounters
+    module MonthlyCounters
       class << self
         def included(klass)
           klass.extend ClassMethods
@@ -11,14 +11,14 @@ class Redis
       end
 
       module ClassMethods
-        def daily_counter(name, options = {}) # rubocop:disable Metrics/MethodLength
+        def monthly_counter(name, options = {}) # rubocop:disable Metrics/MethodLength
           options[:start] ||= 0
           options[:type]  ||= (options[:start]).zero? ? :increment : :decrement
           redis_objects[name.to_sym] = options.merge(type: :counter)
 
           mod = Module.new do
             define_method(name) do
-              Redis::DailyCounter.new(
+              Redis::MonthlyCounter.new(
                 redis_field_key(name), redis_field_redis(name), redis_options(name)
               )
             end

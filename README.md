@@ -2,9 +2,7 @@
 
 # Redis::Objects::Daily::Counter
 
-This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-objects) gem.
-
-Once install this gem, you can use the daily counter, etc. in addition to the standard features of Redis::Objects.
+This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-objects) gem. Once install this gem, you can use the daily counter, etc. in addition to the standard features of Redis::Objects. These counters are useful for measuring conversions, implementing API rate limiting, and more.
 
 ## Installation
 
@@ -18,13 +16,19 @@ If you want to know about installation and standard usage, please see Redis::Obj
 
 ## Usage
 
+`daily_counter` automatically creates keys that are unique to each object, in the format:
+
+```
+model_name:id:field_name:yyyy-mm-dd
+```
+
 For illustration purposes, consider this stub class:
 
 ```rb
 class Homepage
   include Redis::Objects
 
-  daily_counter :pv_count
+  daily_counter :pv, expireat: -> { Time.now + 2_678_400 } # about a month
 
   def id
     1
@@ -32,23 +36,23 @@ class Homepage
 end
 
 # 2021-04-01
-hp = Homepage.new
-hp.id # 1
+homepage = Homepage.new
+homepage.id # 1
 
-hp.pv_count.increment
-hp.pv_count.increment
-hp.pv_count.increment
-puts hp.pv_count.value # 3
+homepage.pv.increment
+homepage.pv.increment
+homepage.pv.increment
+puts homepage.pv.value # 3
 
 # 2021-04-02 (next day)
-puts hp.pv_count.value # 0
-hp.pv_count.increment
-hp.pv_count.increment
-puts hp.pv_count.value # 2
+puts homepage.pv.value # 0
+homepage.pv.increment
+homepage.pv.increment
+puts homepage.pv.value # 2
 
 start_date = Date.new(2021, 4, 1)
 end_date = Date.new(2021, 4, 2)
-hp.pv_count.range(start_date, end_date) # [3, 2]
+homepage.pv.range(start_date, end_date) # [3, 2]
 ```
 
 The daily counter automatically switches the save destination when the date changes.
@@ -56,22 +60,40 @@ You can access past dates counted values like Ruby arrays:
 
 ```rb
 # 2021-04-01
-hp.pv_count.increment(3)
+homepage.pv.increment(3)
 
 # 2021-04-02 (next day)
-hp.pv_count.increment(2)
+homepage.pv.increment(2)
 
 # 2021-04-03 (next day)
-hp.pv_count.increment(5)
+homepage.pv.increment(5)
 
-hp.pv_count[Date.new(2021, 4, 1)] # => 3
-hp.pv_count[Date.new(2021, 4, 1), 3] # => [3, 2, 5]
-hp.pv_count[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => [3, 2]
+homepage.pv[Date.new(2021, 4, 1)] # => 3
+homepage.pv[Date.new(2021, 4, 1), 3] # => [3, 2, 5]
+homepage.pv[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => [3, 2]
 
-hp.pv_count.delete(Date.new(2021, 4, 1))
-hp.pv_count.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [0, 2, 5]
-hp.pv_count.at(Date.new(2021, 4, 2)) # => 2
+homepage.pv.delete(Date.new(2021, 4, 1))
+homepage.pv.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [0, 2, 5]
+homepage.pv.at(Date.new(2021, 4, 2)) # => 2
 ```
+
+### Counters
+
+I recommend using with `expireat` option.
+
+* `annual_counter`
+    * Key format: `model_name:id:field_name:yyyy`
+    * Redis is a highly volatile key-value store, so I don't recommend using it.
+* `monthly_counter`
+    * Key format: `model_name:id:field_name:yyyy-mm`
+* `weekly_counter`
+    * Key format: `model_name:id:field_name:yyyyWw`
+* `daily_counter`
+    * Key format: `model_name:id:field_name:yyyy-mm-dd`
+* `hourly_counter`
+    * Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+* `minutely_counter`
+    * Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
 ### Timezone
 
