@@ -9,23 +9,23 @@ class Redis
 
     attr_reader :original_key
 
-    def [](date, length = nil)
-      if date.is_a? Range
-        range(date.first, date.max)
+    def [](date_or_time, length = nil)
+      if date_or_time.is_a? Range
+        range(date_or_time.first, date_or_time.max)
       elsif length
         case length <=> 0
-        when 1  then range(date, next_key(date, length))
+        when 1  then range(date_or_time, next_key(date_or_time, length))
         when 0  then []
         when -1 then nil  # Ruby does this (a bit weird)
         end
       else
-        at(date)
+        at(date_or_time)
       end
     end
     alias slice []
 
-    def delete(date)
-      redis.del(redis_daily_field_key(date))
+    def delete(date_or_time)
+      redis.del(redis_daily_field_key(date_or_time))
     end
 
     def range(start_date, end_date)
@@ -33,8 +33,8 @@ class Redis
       redis.mget(*keys).map(&:to_i)
     end
 
-    def at(date)
-      redis.get(redis_daily_field_key(date)).to_i
+    def at(date_or_time)
+      redis.get(redis_daily_field_key(date_or_time)).to_i
     end
 
     def current_time
