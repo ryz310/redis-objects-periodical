@@ -5,7 +5,7 @@ RSpec.describe Redis::AnnualCounter do
     Class.new do
       include Redis::Objects
 
-      annual_counter :my_posts
+      annual_counter :pv
 
       def id
         1
@@ -13,16 +13,16 @@ RSpec.describe Redis::AnnualCounter do
     end
   end
 
-  let(:instance) { MockClass.new }
+  let(:homepage) { Homepage.new }
 
   before do
-    stub_const 'MockClass', mock_class
+    stub_const 'Homepage', mock_class
     Timecop.travel(Time.local(2021, 4, 1))
-    instance.my_posts.increment(10)
+    homepage.pv.increment(10)
     Timecop.travel(Time.local(2022, 4, 1))
-    instance.my_posts.increment(11)
+    homepage.pv.increment(11)
     Timecop.travel(Time.local(2023, 4, 1))
-    instance.my_posts.increment(12)
+    homepage.pv.increment(12)
   end
 
   describe 'timezone' do
@@ -31,7 +31,7 @@ RSpec.describe Redis::AnnualCounter do
     context 'when Time class is extended by Active Support' do
       it do
         allow(Time).to receive(:current).and_return(Time.now)
-        instance.my_posts.increment(13)
+        homepage.pv.increment(13)
         expect(Time).to have_received(:current).with(no_args)
       end
     end
@@ -39,7 +39,7 @@ RSpec.describe Redis::AnnualCounter do
     context 'when Time class is not extended by Active Support' do
       it do
         allow(Time).to receive(:now).and_return(Time.now)
-        instance.my_posts.increment(13)
+        homepage.pv.increment(13)
         expect(Time).to have_received(:now).with(no_args)
       end
     end
@@ -47,15 +47,15 @@ RSpec.describe Redis::AnnualCounter do
 
   describe 'keys' do
     it 'appends new counters automatically with the current date' do
-      expect(instance.redis.get('mock_class:1:my_posts:2021').to_i).to eq 10
-      expect(instance.redis.get('mock_class:1:my_posts:2022').to_i).to eq 11
-      expect(instance.redis.get('mock_class:1:my_posts:2023').to_i).to eq 12
+      expect(homepage.redis.get('homepage:1:pv:2021').to_i).to eq 10
+      expect(homepage.redis.get('homepage:1:pv:2022').to_i).to eq 11
+      expect(homepage.redis.get('homepage:1:pv:2023').to_i).to eq 12
     end
   end
 
   describe '#value' do
     it 'returns the value counted today' do
-      expect(instance.my_posts.value).to eq 12
+      expect(homepage.pv.value).to eq 12
     end
   end
 
@@ -64,7 +64,7 @@ RSpec.describe Redis::AnnualCounter do
       let(:date) { Date.new(2021, 4, 1) }
 
       it 'returns the value counted the day' do
-        expect(instance.my_posts[date]).to eq 10
+        expect(homepage.pv[date]).to eq 10
       end
     end
 
@@ -72,7 +72,7 @@ RSpec.describe Redis::AnnualCounter do
       let(:date) { Date.new(2022, 4, 1) }
 
       it 'returns the values counted within the duration' do
-        expect(instance.my_posts[date, 2]).to eq [11, 12]
+        expect(homepage.pv[date, 2]).to eq [11, 12]
       end
     end
 
@@ -82,7 +82,7 @@ RSpec.describe Redis::AnnualCounter do
       end
 
       it 'returns the values counted within the duration' do
-        expect(instance.my_posts[range]).to eq [10, 11]
+        expect(homepage.pv[range]).to eq [10, 11]
       end
     end
   end
@@ -90,8 +90,8 @@ RSpec.describe Redis::AnnualCounter do
   describe '#delete' do
     it 'deletes the value on the day' do
       date = Date.new(2022, 4, 1)
-      expect { instance.my_posts.delete(date) }
-        .to change { instance.my_posts.at(date) }
+      expect { homepage.pv.delete(date) }
+        .to change { homepage.pv.at(date) }
         .from(11).to(0)
     end
   end
@@ -101,7 +101,7 @@ RSpec.describe Redis::AnnualCounter do
     let(:end_date) { Date.new(2022, 4, 1) }
 
     it 'returns the values counted within the duration' do
-      expect(instance.my_posts.range(start_date, end_date)).to eq [10, 11]
+      expect(homepage.pv.range(start_date, end_date)).to eq [10, 11]
     end
   end
 
@@ -109,7 +109,7 @@ RSpec.describe Redis::AnnualCounter do
     let(:date) { Date.new(2022, 4, 1) }
 
     it 'returns the value counted the day' do
-      expect(instance.my_posts.at(date)).to eq 11
+      expect(homepage.pv.at(date)).to eq 11
     end
   end
 end
