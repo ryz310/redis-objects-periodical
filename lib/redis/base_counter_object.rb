@@ -4,7 +4,7 @@ class Redis
   class BaseCounterObject < Counter
     def initialize(key, *args)
       @original_key = key
-      super(redis_daily_field_key(current_date), *args)
+      super(redis_daily_field_key(current_time), *args)
     end
 
     attr_reader :original_key
@@ -37,13 +37,13 @@ class Redis
       redis.get(redis_daily_field_key(date)).to_i
     end
 
-    def current_date
-      @current_date ||= (Time.respond_to?(:current) ? Time.current : Time.now).to_date
+    def current_time
+      @current_time ||= Time.respond_to?(:current) ? Time.current : Time.now
     end
 
     private
 
-    def redis_daily_field_key(_date)
+    def redis_daily_field_key(_date_or_time)
       raise 'not implemented'
     end
 

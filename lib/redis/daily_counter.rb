@@ -5,8 +5,8 @@ class Redis
   class DailyCounter < BaseCounterObject
     private
 
-    def redis_daily_field_key(date)
-      date_key = date.strftime('%Y-%m-%d')
+    def redis_daily_field_key(date_or_time)
+      date_key = date_or_time.strftime('%Y-%m-%d')
       [original_key, date_key].flatten.join(':')
     end
 
