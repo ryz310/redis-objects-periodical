@@ -6,7 +6,6 @@ class Redis
     module HourlyCounters
       class << self
         def included(klass)
-          klass.send :include, InstanceMethods
           klass.extend ClassMethods
         end
       end
@@ -36,10 +35,6 @@ class Redis
             include mod
           end
         end
-      end
-
-      # Instance methods that appear in your class when you include Redis::Objects.
-      module InstanceMethods
       end
     end
   end
