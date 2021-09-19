@@ -30,18 +30,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'redis-objects'
 
-  spec.add_development_dependency 'bundler', '>= 2.0'
-  spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'rake', '~> 13.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rspec_junit_formatter'
-  spec.add_development_dependency 'rubocop', '~> 0.80'
-  spec.add_development_dependency 'rubocop-performance'
-  spec.add_development_dependency 'rubocop-rspec'
-  spec.add_development_dependency 'simplecov', '0.21.2'
-  spec.add_development_dependency 'timecop'
-  spec.add_development_dependency 'yard'
-
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
 end
