@@ -25,6 +25,26 @@ RSpec.describe Redis::DailyCounter do
     instance.my_posts.increment(12)
   end
 
+  describe 'timezone' do
+    before { Timecop.travel(Time.local(2021, 4, 4)) }
+
+    context 'when Time class is extended by Active Support' do
+      it do
+        allow(Time).to receive(:current).and_return(Time.now)
+        instance.my_posts.increment(13)
+        expect(Time).to have_received(:current).with(no_args)
+      end
+    end
+
+    context 'when Time class is not extended by Active Support' do
+      it do
+        allow(Time).to receive(:now).and_return(Time.now)
+        instance.my_posts.increment(13)
+        expect(Time).to have_received(:now).with(no_args)
+      end
+    end
+  end
+
   describe 'keys' do
     it 'appends new counters automatically with the current date' do
       expect(instance.redis.get('mock_class:1:my_posts:2021-04-01').to_i).to eq 10

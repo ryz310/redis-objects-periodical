@@ -4,7 +4,7 @@ class Redis
   class DailyCounter < Counter
     def initialize(key, *args)
       @original_key = key
-      @current_date = Date.today
+      @current_date = (Time.respond_to?(:current) ? Time.current : Time.now).to_date
       super(redis_daily_field_key(current_date), *args)
     end
 
@@ -41,7 +41,7 @@ class Redis
     private
 
     def redis_daily_field_key(date)
-      [original_key, date.to_date].flatten.join(':')
+      [original_key, date].flatten.join(':')
     end
   end
 end
