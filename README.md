@@ -2,6 +2,10 @@
 
 # Redis::Objects::Daily::Counter
 
+This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-objects) gem.
+
+Once install this gem, you can use the daily counter, etc. in addition to the standard features of Redis::Objects.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -10,15 +14,11 @@ Add this line to your application's Gemfile:
 gem 'redis-object-daily-counter'
 ```
 
-And then execute:
-
-    $ bundle install
-
-Or install it yourself as:
-
-    $ gem install redis-object-daily-counter
+If you want to know about installation and standard usage, please see Redis::Objects' GitHub page.
 
 ## Usage
+
+For illustration purposes, consider this stub class:
 
 ```rb
 class Homepage
@@ -51,11 +51,36 @@ end_date = Date.new(2021, 4, 2)
 hp.pv_count.range(start_date, end_date) # [3, 2]
 ```
 
+The daily counter automatically switches the save destination when the date changes.
+You can access past dates counted values like Ruby arrays:
+
+```rb
+# 2021-04-01
+hp.pv_count.increment(3)
+
+# 2021-04-02 (next day)
+hp.pv_count.increment(2)
+
+# 2021-04-03 (next day)
+hp.pv_count.increment(5)
+
+hp.pv_count[Date.new(2021, 4, 1)] # => 3
+hp.pv_count[Date.new(2021, 4, 1), 3] # => [3, 2, 5]
+hp.pv_count[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => [3, 2]
+
+hp.pv_count.delete(Date.new(2021, 4, 1))
+hp.pv_count.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [0, 2, 5]
+hp.pv_count.at(Date.new(2021, 4, 2)) # => 2
+```
+
+### Timezone
+
+This gem follows Ruby process' time zone, but if you extends Time class by ActiveSupport (e.g. `Time.current`), follows Rails process' timezone.
+
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+The development environment for this gem is configured with docker-compose.
+Please use the following command:
 
     $ docker-compose up -d
     $ docker-compose run --rm ruby bundle
