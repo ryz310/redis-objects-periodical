@@ -8,6 +8,7 @@ class Redis
   autoload :MonthlyCounter, 'redis/monthly_counter'
   autoload :AnnualCounter, 'redis/annual_counter'
   autoload :HourlyCounter, 'redis/hourly_counter'
+  autoload :MinutelyCounter, 'redis/minutely_counter'
 
   module Objects
     autoload :DailyCounters, 'redis/objects/daily_counters'
@@ -15,6 +16,7 @@ class Redis
     autoload :MonthlyCounters, 'redis/objects/monthly_counters'
     autoload :AnnualCounters, 'redis/objects/annual_counters'
     autoload :HourlyCounters, 'redis/objects/hourly_counters'
+    autoload :MinutelyCounters, 'redis/objects/minutely_counters'
 
     class << self
       alias original_included included
@@ -28,6 +30,7 @@ class Redis
         klass.send :include, Redis::Objects::MonthlyCounters
         klass.send :include, Redis::Objects::AnnualCounters
         klass.send :include, Redis::Objects::HourlyCounters
+        klass.send :include, Redis::Objects::MinutelyCounters
       end
     end
   end
