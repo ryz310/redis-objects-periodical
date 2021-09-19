@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Redis
-  class DailyCounter < Counter
+  class WeeklyCounter < Counter
     def initialize(key, *args)
       @original_key = key
       @current_date = (Time.respond_to?(:current) ? Time.current : Time.now).to_date
@@ -15,7 +15,7 @@ class Redis
         range(date.first, date.max)
       elsif length
         case length <=> 0
-        when 1  then range(date, date + length - 1)
+        when 1  then range(date, date + 7 * (length - 1))
         when 0  then []
         when -1 then nil  # Ruby does this (a bit weird)
         end
@@ -30,7 +30,7 @@ class Redis
     end
 
     def range(start_date, end_date)
-      keys = (start_date..end_date).map { |date| redis_daily_field_key(date) }
+      keys = (start_date..end_date).map { |date| redis_daily_field_key(date) }.uniq
       redis.mget(*keys).map(&:to_i)
     end
 
@@ -41,7 +41,7 @@ class Redis
     private
 
     def redis_daily_field_key(date)
-      date_key = date.strftime('%Y-%m-%d')
+      date_key = date.strftime('%YW%W')
       [original_key, date_key].flatten.join(':')
     end
   end
