@@ -183,7 +183,7 @@ workflows:
           filters:
             branches:
               only:
-                - production
+                - release
 
   challenge:
     triggers:
@@ -201,4 +201,4 @@ experimental:
     branches:
       only:
         - master
-        - production
+        - release
