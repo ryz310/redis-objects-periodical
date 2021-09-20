@@ -16,6 +16,6 @@
 
 * [#2](https://github.com/ryz310/redis-object-daily-counter/pull/2) Install circle ci ([@ryz310](https://github.com/ryz310))
 
-## 0.1.0 (Sep 12, 2021)
+## v0.1.0 (Sep 12, 2021)
 
 * The first release :tada:
