@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redis-object-daily-counter (0.2.0)
+    redis-objects-daily-counter (0.2.0)
       redis-objects
 
 GEM
@@ -81,7 +81,7 @@ DEPENDENCIES
   bundler (>= 2.0)
   pry-byebug
   rake (~> 13.0)
-  redis-object-daily-counter!
+  redis-objects-daily-counter!
   rspec (~> 3.0)
   rspec_junit_formatter
   rubocop (~> 0.80)

@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-object-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-object-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-object-daily-counter.svg)](https://badge.fury.io/rb/redis-object-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/maintainability)](https://codeclimate.com/github/ryz310/redis-object-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/test_coverage)](https://codeclimate.com/github/ryz310/redis-object-daily-counter/test_coverage) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ryz310/redis-object-daily-counter)](https://dependabot.com)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-objects-daily-counter.svg)](https://badge.fury.io/rb/redis-objects-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/3639d1776e23031b1b31/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/test_coverage) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ryz310/redis-objects-daily-counter)](https://dependabot.com)
 
 # Redis::Objects::Daily::Counter
 
@@ -9,7 +9,7 @@ This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-o
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'redis-object-daily-counter'
+gem 'redis-objects-daily-counter'
 ```
 
 If you want to know about installation and standard usage, please see Redis::Objects' GitHub page.
@@ -111,7 +111,7 @@ Please use the following command:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redis-object-daily-counter. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/redis-object-daily-counter/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redis-objects-daily-counter. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/redis-objects-daily-counter/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -119,4 +119,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Redis::Objects::Daily::Counter project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/redis-object-daily-counter/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Redis::Objects::Daily::Counter project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/redis-objects-daily-counter/blob/master/CODE_OF_CONDUCT.md).

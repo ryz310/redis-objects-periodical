@@ -16,7 +16,7 @@ Style/Documentation:
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
-    - 'lib/redis-object-daily-counter.rb'
+    - 'lib/redis-objects-daily-counter.rb'
     - 'lib/redis/annual_counter.rb'
     - 'lib/redis/base_counter_object.rb'
     - 'lib/redis/daily_counter.rb'

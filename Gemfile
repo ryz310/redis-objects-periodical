@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in redis-object-daily-counter.gemspec
+# Specify your gem's dependencies in redis-objects-daily-counter.gemspec
 gemspec
 
 gem 'bundler', '>= 2.0'
