@@ -44,8 +44,6 @@ RSpec.describe Redis::DailyCounter do
   end
 
   describe 'timezone' do
-    before { Timecop.travel(Time.local(2021, 4, 4)) }
-
     context 'when Time class is extended by Active Support' do
       it do
         allow(Time).to receive(:current).and_return(Time.now)
