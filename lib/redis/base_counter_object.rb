@@ -24,7 +24,7 @@ class Redis
     end
     alias slice []
 
-    def delete(date_or_time)
+    def delete_at(date_or_time)
       redis.del(redis_daily_field_key(date_or_time))
     end
 

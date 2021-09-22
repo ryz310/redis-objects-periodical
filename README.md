@@ -72,7 +72,7 @@ homepage.pv[Date.new(2021, 4, 1)] # => 3
 homepage.pv[Date.new(2021, 4, 1), 3] # => [3, 2, 5]
 homepage.pv[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => [3, 2]
 
-homepage.pv.delete(Date.new(2021, 4, 1))
+homepage.pv.delete_at(Date.new(2021, 4, 1))
 homepage.pv.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [0, 2, 5]
 homepage.pv.at(Date.new(2021, 4, 2)) # => 2
 ```

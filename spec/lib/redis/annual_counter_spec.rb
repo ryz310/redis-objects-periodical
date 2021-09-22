@@ -105,10 +105,10 @@ RSpec.describe Redis::AnnualCounter do
     end
   end
 
-  describe '#delete' do
+  describe '#delete_at' do
     it 'deletes the value on the day' do
       date = Date.new(2022, 4, 1)
-      expect { homepage.pv.delete(date) }
+      expect { homepage.pv.delete_at(date) }
         .to change { homepage.pv.at(date) }
         .from(11).to(0)
     end
