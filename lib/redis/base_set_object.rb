@@ -25,7 +25,7 @@ class Redis
       raise 'not implemented'
     end
 
-    def next_key(_date, _length)
+    def next_key(_date, _length = 1)
       raise 'not implemented'
     end
   end
