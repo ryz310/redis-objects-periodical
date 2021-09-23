@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redis-objects-daily-counter (0.2.0)
+    redis-objects-daily-counter (0.3.0)
       redis-objects
 
 GEM
