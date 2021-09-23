@@ -126,8 +126,8 @@ RSpec.describe Redis::AnnualCounter do
   describe '#at' do
     let(:date) { Date.new(2022, 4, 1) }
 
-    it 'returns the value counted the year' do
-      expect(homepage.pv.at(date)).to eq 11
+    it 'returns a counter object counted the year' do
+      expect(homepage.pv.at(date).value).to eq 11
     end
   end
 end

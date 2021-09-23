@@ -124,8 +124,8 @@ RSpec.describe Redis::DailyCounter do
   describe '#at' do
     let(:date) { Date.new(2021, 4, 2) }
 
-    it 'returns the value counted the day' do
-      expect(homepage.pv.at(date)).to eq 11
+    it 'returns a counter object counted the day' do
+      expect(homepage.pv.at(date).value).to eq 11
     end
   end
 end

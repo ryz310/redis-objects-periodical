@@ -74,7 +74,8 @@ homepage.pv[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => [3, 2]
 
 homepage.pv.delete_at(Date.new(2021, 4, 1))
 homepage.pv.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [0, 2, 5]
-homepage.pv.at(Date.new(2021, 4, 2)) # => 2
+homepage.pv.at(Date.new(2021, 4, 2)) # => #<Redis::Counter key="homepage:1:pv:2021-04-02">
+homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 ```
 
 ### Counters

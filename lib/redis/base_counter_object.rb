@@ -4,6 +4,10 @@ class Redis
   module BaseCounterObject
     private
 
+    def get_redis_object(key)
+      Redis::Counter.new(key)
+    end
+
     def get_value_from_redis(key)
       redis.get(key).to_i
     end

@@ -130,9 +130,11 @@ RSpec.describe Redis::AnnualSet do
   describe '#at' do
     let(:date) { Date.new(2022, 4, 1) }
 
-    it 'returns the members added the year' do
-      expect(homepage.annual_active_users.at(date))
+    it 'returns a set object added the year' do
+      expect(homepage.annual_active_users.at(date).members)
         .to contain_exactly('user1', 'user2', 'user4', 'user5')
+      expect(homepage.annual_active_users.at(date).length)
+        .to eq 4
     end
   end
 end

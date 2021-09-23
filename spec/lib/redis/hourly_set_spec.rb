@@ -128,9 +128,11 @@ RSpec.describe Redis::HourlySet do
   describe '#at' do
     let(:date) { Time.local(2021, 4, 1, 11) }
 
-    it 'returns the members added the hour' do
-      expect(homepage.hourly_active_users.at(date))
+    it 'returns a set object added the hour' do
+      expect(homepage.hourly_active_users.at(date).members)
         .to contain_exactly('user1', 'user2', 'user4', 'user5')
+      expect(homepage.hourly_active_users.at(date).length)
+        .to eq 4
     end
   end
 end

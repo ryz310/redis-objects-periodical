@@ -124,8 +124,8 @@ RSpec.describe Redis::HourlyCounter do
   describe '#at' do
     let(:date) { Time.local(2021, 4, 1, 11) }
 
-    it 'returns the value counted the hour' do
-      expect(homepage.pv.at(date)).to eq 11
+    it 'returns a counter object counted the hour' do
+      expect(homepage.pv.at(date).value).to eq 11
     end
   end
 end

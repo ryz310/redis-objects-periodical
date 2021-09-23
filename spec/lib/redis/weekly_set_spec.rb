@@ -128,9 +128,11 @@ RSpec.describe Redis::WeeklySet do
   describe '#at' do
     let(:date) { Date.new(2021, 4, 8) }
 
-    it 'returns the members added the week' do
-      expect(homepage.weekly_active_users.at(date))
+    it 'returns a set object added the week' do
+      expect(homepage.weekly_active_users.at(date).members)
         .to contain_exactly('user1', 'user2', 'user4', 'user5')
+      expect(homepage.weekly_active_users.at(date).length)
+        .to eq 4
     end
   end
 end

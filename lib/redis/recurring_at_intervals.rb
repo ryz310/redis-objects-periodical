@@ -19,7 +19,7 @@ class Redis
         when -1 then nil  # Ruby does this (a bit weird)
         end
       else
-        at(date_or_time)
+        get_value_from_redis(redis_daily_field_key(date_or_time))
       end
     end
     alias slice []
@@ -43,7 +43,7 @@ class Redis
     end
 
     def at(date_or_time)
-      get_value_from_redis(redis_daily_field_key(date_or_time))
+      get_redis_object(redis_daily_field_key(date_or_time))
     end
 
     def current_time
@@ -51,6 +51,10 @@ class Redis
     end
 
     private
+
+    def get_redis_object(_key)
+      raise 'not implemented'
+    end
 
     def get_value_from_redis(_key)
       raise 'not implemented'

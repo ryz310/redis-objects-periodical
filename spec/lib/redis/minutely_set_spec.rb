@@ -128,9 +128,11 @@ RSpec.describe Redis::MinutelySet do
   describe '#at' do
     let(:date) { Time.local(2021, 4, 1, 10, 21) }
 
-    it 'returns the members added the minute' do
-      expect(homepage.minutely_active_users.at(date))
+    it 'returns a set object added the minute' do
+      expect(homepage.minutely_active_users.at(date).members)
         .to contain_exactly('user1', 'user2', 'user4', 'user5')
+      expect(homepage.minutely_active_users.at(date).length)
+        .to eq 4
     end
   end
 end
