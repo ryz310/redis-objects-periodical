@@ -44,8 +44,6 @@ RSpec.describe Redis::DailyCounter do
   end
 
   describe 'timezone' do
-    before { Timecop.travel(Time.local(2021, 4, 4)) }
-
     context 'when Time class is extended by Active Support' do
       it do
         allow(Time).to receive(:current).and_return(Time.now)
@@ -105,10 +103,10 @@ RSpec.describe Redis::DailyCounter do
     end
   end
 
-  describe '#delete' do
+  describe '#delete_at' do
     it 'deletes the value on the day' do
       date = Date.new(2021, 4, 2)
-      expect { homepage.pv.delete(date) }
+      expect { homepage.pv.delete_at(date) }
         .to change { homepage.pv.at(date) }
         .from(11).to(0)
     end
@@ -126,8 +124,8 @@ RSpec.describe Redis::DailyCounter do
   describe '#at' do
     let(:date) { Date.new(2021, 4, 2) }
 
-    it 'returns the value counted the day' do
-      expect(homepage.pv.at(date)).to eq 11
+    it 'returns a counter object counted the day' do
+      expect(homepage.pv.at(date).value).to eq 11
     end
   end
 end
