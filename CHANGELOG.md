@@ -1,5 +1,17 @@
 # Change log
 
+## v0.3.0 (Sep 23, 2021)
+
+### Feature
+### Bugfix
+### Security
+### Breaking Change
+### Rubocop Challenge
+### Dependabot
+### Misc
+
+* [#7](https://github.com/ryz310/redis-object-daily-counter/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
+
 ## v0.2.0 (Sep 20, 2021)
 
 ### Feature
