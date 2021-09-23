@@ -44,8 +44,6 @@ RSpec.describe Redis::MonthlyCounter do
   end
 
   describe 'timezone' do
-    before { Timecop.travel(Time.local(2021, 7, 1)) }
-
     context 'when Time class is extended by Active Support' do
       it do
         allow(Time).to receive(:current).and_return(Time.now)
@@ -64,7 +62,7 @@ RSpec.describe Redis::MonthlyCounter do
   end
 
   describe 'keys' do
-    it 'appends new counters automatically with the current date' do
+    it 'appends new counters automatically with the current month' do
       expect(homepage.redis.get('homepage:1:pv:2021-04').to_i).to eq 10
       expect(homepage.redis.get('homepage:1:pv:2021-05').to_i).to eq 11
       expect(homepage.redis.get('homepage:1:pv:2021-06').to_i).to eq 12
@@ -72,7 +70,7 @@ RSpec.describe Redis::MonthlyCounter do
   end
 
   describe '#value' do
-    it 'returns the value counted today' do
+    it 'returns the value counted this month' do
       expect(homepage.pv.value).to eq 12
     end
   end
@@ -81,7 +79,7 @@ RSpec.describe Redis::MonthlyCounter do
     context 'with date' do
       let(:date) { Date.new(2021, 4, 1) }
 
-      it 'returns the value counted the day' do
+      it 'returns the value counted the month' do
         expect(homepage.pv[date]).to eq 10
       end
     end
@@ -105,10 +103,10 @@ RSpec.describe Redis::MonthlyCounter do
     end
   end
 
-  describe '#delete' do
-    it 'deletes the value on the day' do
+  describe '#delete_at' do
+    it 'deletes the value on the month' do
       date = Date.new(2021, 5, 1)
-      expect { homepage.pv.delete(date) }
+      expect { homepage.pv.delete_at(date) }
         .to change { homepage.pv.at(date) }
         .from(11).to(0)
     end
@@ -126,8 +124,8 @@ RSpec.describe Redis::MonthlyCounter do
   describe '#at' do
     let(:date) { Date.new(2021, 5, 1) }
 
-    it 'returns the value counted the day' do
-      expect(homepage.pv.at(date)).to eq 11
+    it 'returns a counter object counted the month' do
+      expect(homepage.pv.at(date).value).to eq 11
     end
   end
 end

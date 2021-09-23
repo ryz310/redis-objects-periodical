@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
 class Redis
-  module BaseCounterObject
+  module BaseSetObject
     private
 
     def get_redis_object(key)
-      Redis::Counter.new(key)
+      Redis::Set.new(key)
     end
 
     def get_value_from_redis(key)
-      redis.get(key).to_i
+      vals = redis.smembers(key)
+      vals.nil? ? [] : vals.map { |v| unmarshal(v) }
     end
 
     def get_values_from_redis(keys)
-      redis.mget(*keys).map(&:to_i)
+      redis.sunion(*keys).map { |v| unmarshal(v) }
     end
 
     def delete_from_redis(key)

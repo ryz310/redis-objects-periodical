@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require "#{File.dirname(__FILE__)}/recurring_at_intervals"
-require "#{File.dirname(__FILE__)}/base_counter_object"
+require "#{File.dirname(__FILE__)}/base_set_object"
 require "#{File.dirname(__FILE__)}/recurring_at_intervals/hourly"
 
 class Redis
-  class HourlyCounter < Counter
+  class HourlySet < Set
     include RecurringAtIntervals
-    include BaseCounterObject
+    include BaseSetObject
     include Hourly
   end
 end

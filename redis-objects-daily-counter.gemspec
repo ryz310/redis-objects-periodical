@@ -3,19 +3,19 @@
 require_relative 'lib/redis/objects/daily-counter/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'redis-object-daily-counter'
+  spec.name          = 'redis-objects-daily-counter'
   spec.version       = Redis::Objects::Daily::Counter::VERSION
   spec.authors       = ['ryz310']
   spec.email         = ['ryz310@gmail.com']
 
   spec.summary       = 'Daily counter within Redis::Objects'
   spec.description   = 'Daily counter within Redis::Objects. Works with any class or ORM.'
-  spec.homepage      = 'https://github.com/ryz310/redis-object-daily-counter'
+  spec.homepage      = 'https://github.com/ryz310/redis-objects-daily-counter'
   spec.license       = 'MIT'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://github.com/ryz310/redis-object-daily-counter'
-  spec.metadata['changelog_uri'] = 'https://github.com/ryz310/redis-object-daily-counter/blob/master/CHANGELOG.md'
+  spec.metadata['source_code_uri'] = 'https://github.com/ryz310/redis-objects-daily-counter'
+  spec.metadata['changelog_uri'] = 'https://github.com/ryz310/redis-objects-daily-counter/blob/master/CHANGELOG.md'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
