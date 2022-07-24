@@ -57,7 +57,7 @@ end_date = Date.new(2021, 4, 2)
 homepage.pv.range(start_date, end_date) # [3, 2]
 ```
 
-### Daily Counter
+### Daily Counters
 
 The daily counter automatically switches the save destination when the date changes.
 You can access past dates counted values like Ruby arrays:
@@ -82,23 +82,23 @@ homepage.pv.at(Date.new(2021, 4, 2)) # => #<Redis::Counter key="homepage:1:pv:20
 homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 ```
 
-#### Daily Counter Family
+#### Daily Counters Family
 
-* `annual_counter`
-    * Key format: `model_name:id:field_name:yyyy`
-    * Redis is a highly volatile key-value store, so I don't recommend using it.
-* `monthly_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm`
-* `weekly_counter`
-    * Key format: `model_name:id:field_name:yyyyWw`
-* `daily_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-dd`
-* `hourly_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh`
-* `minutely_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
+- `annual_counter`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_counter`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
-### Daily Set
+### Daily Sets
 
 The daily set also automatically switches the save destination when the date changes.
 
@@ -130,22 +130,21 @@ homepage.dau.at(Date.new(2021, 4, 2)) # => #<Redis::Set key="homepage:1:dau:2021
 homepage.dau.at(Date.new(2021, 4, 2)).members # ['user2', 'user3']
 ```
 
-#### Daily Set Family
+#### Daily Sets Family
 
-* `annual_set`
-    * Key format: `model_name:id:field_name:yyyy`
-    * Redis is a highly volatile key-value store, so I don't recommend using it.
-* `monthly_set`
-    * Key format: `model_name:id:field_name:yyyy-mm`
-* `weekly_set`
-    * Key format: `model_name:id:field_name:yyyyWw`
-* `daily_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-dd`
-* `hourly_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh`
-* `minutely_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
-
+- `annual_set`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_set`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_set`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
 ### Timezone
 
