@@ -20,5 +20,9 @@ class Redis
     def delete_from_redis(key)
       redis.del(key)
     end
+
+    def empty_value
+      []
+    end
   end
 end
