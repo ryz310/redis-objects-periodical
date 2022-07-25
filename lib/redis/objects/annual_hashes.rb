@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'redis/annual_hash_key'
+require 'redis/periodical_hash_key'
 class Redis
   module Objects
     module AnnualHashes

@@ -7,7 +7,7 @@ class Redis
 
   PERIODICALS.each do |periodical|
     autoload :"#{periodical.capitalize}Counter", "redis/periodical_counter"
-    autoload :"#{periodical.capitalize}HashKey", "redis/#{periodical}_hash_key"
+    autoload :"#{periodical.capitalize}HashKey", "redis/periodical_hash_key"
     autoload :"#{periodical.capitalize}Set", "redis/#{periodical}_set"
   end
 
