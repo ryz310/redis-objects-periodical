@@ -20,7 +20,7 @@ executors:
     parameters:
       <<: *ruby_version
     docker:
-      - image: circleci/ruby:<< parameters.ruby_version >>
+      - image: cimg/ruby:<< parameters.ruby_version >>
       - image: redis:latest
         name: redis
     working_directory: ~/repo
