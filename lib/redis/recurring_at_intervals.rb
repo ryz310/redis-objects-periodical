@@ -15,7 +15,7 @@ class Redis
       elsif length
         case length <=> 0
         when 1  then range(date_or_time, next_key(date_or_time, length - 1))
-        when 0  then []
+        when 0  then empty_value
         when -1 then nil  # Ruby does this (a bit weird)
         end
       else
