@@ -129,9 +129,14 @@ jobs:
           parts: 3
       - code-climate/upload-coverage
   rubocop:
-    executor: default
+    parameters:
+      <<: *ruby_version
+    executor:
+      name: default
+      ruby_version: << parameters.ruby_version >>
     steps:
-      - setup
+      - setup:
+          ruby_version: << parameters.ruby_version >>
       - rubocop
   yardoc:
     executor: default
@@ -163,7 +168,8 @@ workflows:
       - build:
           name: build_on_ruby_3.1
           ruby_version: "3.1"
-      - rubocop
+      - rubocop:
+          ruby_version: "2.7"
       - yardoc
       - upload-coverage:
           requires:
