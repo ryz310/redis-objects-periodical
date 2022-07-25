@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'redis/daily_set'
+require 'redis/periodical_set'
 class Redis
   module Objects
     module DailySets

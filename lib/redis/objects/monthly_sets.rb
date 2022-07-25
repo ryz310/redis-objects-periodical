@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'redis/monthly_set'
+require 'redis/periodical_set'
 class Redis
   module Objects
     module MonthlySets
