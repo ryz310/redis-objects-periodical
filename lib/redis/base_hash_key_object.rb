@@ -14,10 +14,17 @@ class Redis
       h
     end
 
-    def get_values_from_redis(keys)
+    def get_values_from_redis(keys) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       keys.inject({}) do |memo, key|
         memo.merge(get_value_from_redis(key)) do |_, self_val, other_val|
-          self_val + other_val
+          values = [self_val, other_val]
+          if values.all? { |val| val =~ /\A\d+\z/ }
+            values.sum(&:to_i).to_s
+          elsif values.all? { |val| val =~ /\A\d+(\.\d+)?\z/ }
+            values.sum(&:to_f).to_s
+          else
+            values.join(',')
+          end
         end
       end
     end
