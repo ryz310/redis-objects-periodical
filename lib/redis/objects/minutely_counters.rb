@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'redis/minutely_counter'
+require 'redis/periodical_counter'
 class Redis
   module Objects
     module MinutelyCounters

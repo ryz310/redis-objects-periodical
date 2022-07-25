@@ -6,7 +6,7 @@ class Redis
   PERIODICALS = %w[daily weekly monthly annual hourly minutely].freeze
 
   PERIODICALS.each do |periodical|
-    autoload :"#{periodical.capitalize}Counter", "redis/#{periodical}_counter"
+    autoload :"#{periodical.capitalize}Counter", "redis/periodical_counter"
     autoload :"#{periodical.capitalize}HashKey", "redis/#{periodical}_hash_key"
     autoload :"#{periodical.capitalize}Set", "redis/#{periodical}_set"
   end
