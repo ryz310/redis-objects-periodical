@@ -24,9 +24,9 @@ GEM
       pry (~> 0.13.0)
     rainbow (3.0.0)
     rake (13.0.6)
-    redis (4.4.0)
-    redis-objects (1.5.1)
-      redis (~> 4.2)
+    redis (4.7.1)
+    redis-objects (1.7.0)
+      redis
     regexp_parser (2.1.1)
     rexml (3.2.5)
     rspec (3.11.0)
