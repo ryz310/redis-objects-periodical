@@ -2,9 +2,9 @@
 
 require 'redis/periodical_hash_key'
 
-Redis::PERIODICALS.each do |periodical|
+Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
   new_module = Module.new
-  new_module.module_eval <<~RUBY
+  new_module.module_eval <<~RUBY, __FILE__, __LINE__ + 1
     def self.included(klass)
       klass.extend ClassMethods
     end
