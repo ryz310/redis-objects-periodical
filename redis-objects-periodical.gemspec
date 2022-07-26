@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
+require_relative 'lib/redis/objects/periodical/version'
+
 Gem::Specification.new do |spec|
-  spec.name          = 'redis-objects-daily-counter'
-  spec.version       = '0.4.1'
+  spec.name          = 'redis-objects-periodical'
+  spec.version       = Redis::Objects::Periodical::VERSION
   spec.authors       = ['ryz310']
   spec.email         = ['ryz310@gmail.com']
 
-  spec.summary       = 'Daily counter within Redis::Objects'
-  spec.description   = 'Daily counter within Redis::Objects. Works with any class or ORM.'
-  spec.post_install_message = 'The redis-objects-daily-counter gem has been deprecated and has '\
-                           'been replaced by redis-objects-periodical. Please switch to '\
-                           'redis-objects-periodical as soon as possible.'
-  spec.homepage      = 'https://github.com/ryz310/redis-objects-daily-counter'
+  spec.summary       = 'Extends Redis::Objects as periodical.'
+  spec.description   = 'Extends Redis::Objects to switch automatically the save destination ' \
+                       'within Redis on changing dates.'
+  spec.homepage      = 'https://github.com/ryz310/redis-objects-periodical'
   spec.license       = 'MIT'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://github.com/ryz310/redis-objects-daily-counter'
-  spec.metadata['changelog_uri'] = 'https://github.com/ryz310/redis-objects-daily-counter/blob/master/CHANGELOG.md'
+  spec.metadata['source_code_uri'] = 'https://github.com/ryz310/redis-objects-periodical'
+  spec.metadata['changelog_uri'] = 'https://github.com/ryz310/redis-objects-periodical/blob/master/CHANGELOG.md'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

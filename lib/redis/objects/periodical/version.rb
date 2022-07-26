@@ -2,10 +2,8 @@
 
 class Redis
   module Objects
-    module Daily
-      module Counter
-        VERSION = '0.4.0'
-      end
+    module Periodical
+      VERSION = '0.4.1'
     end
   end
 end
