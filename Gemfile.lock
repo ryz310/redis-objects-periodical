@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redis-objects-periodical (0.4.0)
+    redis-objects-periodical (0.4.1)
       redis-objects
 
 GEM
@@ -95,4 +95,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.3.18
+   2.3.11

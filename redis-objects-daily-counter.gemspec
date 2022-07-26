@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = 'redis-objects-daily-counter'
-  spec.version       = '0.4.0'
+  spec.version       = '0.4.1'
   spec.authors       = ['ryz310']
   spec.email         = ['ryz310@gmail.com']
 
