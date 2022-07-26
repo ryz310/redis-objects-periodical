@@ -15,7 +15,7 @@ class Redis
     PERIODICALS.each do |periodical|
       autoload :"#{periodical.capitalize}Counters", "redis/objects/periodical_counters"
       autoload :"#{periodical.capitalize}Hashes", "redis/objects/periodical_hashes"
-      autoload :"#{periodical.capitalize}Sets", "redis/objects/#{periodical}_sets"
+      autoload :"#{periodical.capitalize}Sets", "redis/objects/periodical_sets"
     end
 
     class << self
