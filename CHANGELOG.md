@@ -1,5 +1,24 @@
 # Change log
 
+## v0.4.0 (Jul 26, 2022)
+
+### Feature
+### Bugfix
+### Security
+### Breaking Change
+### Rubocop Challenge
+### Dependabot
+### Misc
+
+* [#16](https://github.com/ryz310/redis-object-daily-counter/pull/16) Bump yard from 0.9.26 to 0.9.28 ([@ryz310](https://github.com/ryz310))
+* [#15](https://github.com/ryz310/redis-object-daily-counter/pull/15) Bump rspec_junit_formatter from 0.4.1 to 0.5.1 ([@ryz310](https://github.com/ryz310))
+* [#13](https://github.com/ryz310/redis-object-daily-counter/pull/13) Bump rspec from 3.10.0 to 3.11.0 ([@ryz310](https://github.com/ryz310))
+* [#14](https://github.com/ryz310/redis-object-daily-counter/pull/14) Bump timecop from 0.9.4 to 0.9.5 ([@ryz310](https://github.com/ryz310))
+* [#12](https://github.com/ryz310/redis-object-daily-counter/pull/12) Bump redis-objects from 1.5.1 to 1.7.0 ([@ryz310](https://github.com/ryz310))
+* [#17](https://github.com/ryz310/redis-object-daily-counter/pull/17) Support `Redis::HashKey` as a recurring object ([@ryz310](https://github.com/ryz310))
+* [#18](https://github.com/ryz310/redis-object-daily-counter/pull/18) Bump up Ruby 3.1 and drop support Ruby 2.6 ([@ryz310](https://github.com/ryz310))
+* [#19](https://github.com/ryz310/redis-object-daily-counter/pull/19) Reduce similar source codes with meta programming ([@ryz310](https://github.com/ryz310))
+
 ## v0.3.0 (Sep 23, 2021)
 
 ### Feature
