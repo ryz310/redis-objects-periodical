@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-objects-daily-counter.svg)](https://badge.fury.io/rb/redis-objects-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/test_coverage) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ryz310/redis-objects-daily-counter)](https://dependabot.com)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-objects-daily-counter.svg)](https://badge.fury.io/rb/redis-objects-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/test_coverage)
 
 # Redis::Objects::Daily::Counter and Daily::Set
 
@@ -30,6 +30,7 @@ class Homepage
   include Redis::Objects
 
   daily_counter :pv, expireat: -> { Time.now + 2_678_400 } # about a month
+  daily_hash_key :browsing_history, expireat: -> { Time.now + 2_678_400 } # about a month
   daily_set :dau, expireat: -> { Time.now + 2_678_400 } # about a month
 
   def id
@@ -57,7 +58,7 @@ end_date = Date.new(2021, 4, 2)
 homepage.pv.range(start_date, end_date) # [3, 2]
 ```
 
-### Daily Counter
+### Daily Counters
 
 The daily counter automatically switches the save destination when the date changes.
 You can access past dates counted values like Ruby arrays:
@@ -82,23 +83,71 @@ homepage.pv.at(Date.new(2021, 4, 2)) # => #<Redis::Counter key="homepage:1:pv:20
 homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 ```
 
-#### Daily Counter Family
+#### Daily Counters Family
 
-* `annual_counter`
-    * Key format: `model_name:id:field_name:yyyy`
-    * Redis is a highly volatile key-value store, so I don't recommend using it.
-* `monthly_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm`
-* `weekly_counter`
-    * Key format: `model_name:id:field_name:yyyyWw`
-* `daily_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-dd`
-* `hourly_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh`
-* `minutely_counter`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
+- `annual_counter`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_counter`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
-### Daily Set
+### Daily Hashes
+
+The daily hash also automatically switches the save destination when the date changes.
+
+```rb
+# 2021-04-01
+homepage.browsing_history.incr('item1')
+homepage.browsing_history.incr('item2')
+homepage.browsing_history.incr('item2')
+puts homepage.browsing_history.all # { 'item1' => '1', 'item2' => '2' }
+
+# 2021-04-02 (next day)
+puts homepage.browsing_history.all # {}
+
+homepage.browsing_history.bulk_set('item1' => 3, 'item3' => 5)
+puts homepage.browsing_history.all # { 'item1' => '3', 'item3' => '5' }
+
+# 2021-04-03 (next day)
+homepage.browsing_history.incr('item2')
+homepage.browsing_history.incr('item4')
+puts homepage.browsing_history.all # { 'item2' => '1', 'item4' => '1' }
+
+homepage.browsing_history[Date.new(2021, 4, 1)] # => { 'item1' => '1', 'item2' => '2' }
+homepage.browsing_history[Date.new(2021, 4, 1), 3] # => { 'item1' => '4', 'item2' => '3', 'item3' => '5', 'item4' => '1' }
+homepage.browsing_history[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => { 'item1' => '4', 'item2' => '2', 'item3' => '5' }
+
+homepage.browsing_history.delete_at(Date.new(2021, 4, 1))
+homepage.browsing_history.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => { 'item1' => '3', 'item2' => '1', 'item3' => '5', 'item4' => '1' }
+homepage.browsing_history.at(Date.new(2021, 4, 2)) # => #<Redis::HashKey key="homepage:1:browsing_history:2021-04-02">
+homepage.browsing_history.at(Date.new(2021, 4, 2)).all # { 'item1' => '3', 'item3' => '5' }
+```
+
+#### Daily Hashes Family
+
+- `annual_hash_key`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_hash_key`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_hash_key`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_hash_key`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_hash_key`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_hash_key`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
+
+### Daily Sets
 
 The daily set also automatically switches the save destination when the date changes.
 
@@ -130,22 +179,21 @@ homepage.dau.at(Date.new(2021, 4, 2)) # => #<Redis::Set key="homepage:1:dau:2021
 homepage.dau.at(Date.new(2021, 4, 2)).members # ['user2', 'user3']
 ```
 
-#### Daily Set Family
+#### Daily Sets Family
 
-* `annual_set`
-    * Key format: `model_name:id:field_name:yyyy`
-    * Redis is a highly volatile key-value store, so I don't recommend using it.
-* `monthly_set`
-    * Key format: `model_name:id:field_name:yyyy-mm`
-* `weekly_set`
-    * Key format: `model_name:id:field_name:yyyyWw`
-* `daily_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-dd`
-* `hourly_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh`
-* `minutely_set`
-    * Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
-
+- `annual_set`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_set`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_set`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_set`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
 ### Timezone
 
