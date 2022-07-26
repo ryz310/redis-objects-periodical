@@ -1,5 +1,17 @@
 # Change log
 
+## v0.4.1 (Jul 27, 2022)
+
+### Feature
+### Bugfix
+### Security
+### Breaking Change
+### Rubocop Challenge
+### Dependabot
+### Misc
+
+* [#22](https://github.com/ryz310/redis-object-daily-counter/pull/22) Rename from redis-object-daily-counter to redis-object-periodical ([@ryz310](https://github.com/ryz310))
+
 ## v0.4.0 (Jul 26, 2022)
 
 ### Feature
