@@ -15,13 +15,14 @@ Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
     - "redis-objects-daily-counter.gemspec"
+    - "redis-objects-periodical.gemspec"
 
 Metrics/MethodLength:
   Max: 15
 
 Naming/FileName:
   Exclude:
-    - "lib/redis-objects-daily-counter.rb"
+    - "lib/redis-objects-periodical.rb"
 
 Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: comma
