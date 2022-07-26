@@ -4,29 +4,29 @@
 
 ### Feature
 
-- [#17](https://github.com/ryz310/redis-object-daily-counter/pull/17) Support `Redis::HashKey` as a recurring object ([@ryz310](https://github.com/ryz310))
+- [#17](https://github.com/ryz310/redis-object-periodical/pull/17) Support `Redis::HashKey` as a recurring object ([@ryz310](https://github.com/ryz310))
 
 ### Breaking Change
 
-- [#18](https://github.com/ryz310/redis-object-daily-counter/pull/18) Bump up Ruby 3.1 and drop support Ruby 2.6 ([@ryz310](https://github.com/ryz310))
+- [#18](https://github.com/ryz310/redis-object-periodical/pull/18) Bump up Ruby 3.1 and drop support Ruby 2.6 ([@ryz310](https://github.com/ryz310))
 
 ### Dependabot
 
-- [#16](https://github.com/ryz310/redis-object-daily-counter/pull/16) Bump yard from 0.9.26 to 0.9.28 ([@ryz310](https://github.com/ryz310))
-- [#15](https://github.com/ryz310/redis-object-daily-counter/pull/15) Bump rspec_junit_formatter from 0.4.1 to 0.5.1 ([@ryz310](https://github.com/ryz310))
-- [#13](https://github.com/ryz310/redis-object-daily-counter/pull/13) Bump rspec from 3.10.0 to 3.11.0 ([@ryz310](https://github.com/ryz310))
-- [#14](https://github.com/ryz310/redis-object-daily-counter/pull/14) Bump timecop from 0.9.4 to 0.9.5 ([@ryz310](https://github.com/ryz310))
-- [#12](https://github.com/ryz310/redis-object-daily-counter/pull/12) Bump redis-objects from 1.5.1 to 1.7.0 ([@ryz310](https://github.com/ryz310))
+- [#16](https://github.com/ryz310/redis-object-periodical/pull/16) Bump yard from 0.9.26 to 0.9.28 ([@ryz310](https://github.com/ryz310))
+- [#15](https://github.com/ryz310/redis-object-periodical/pull/15) Bump rspec_junit_formatter from 0.4.1 to 0.5.1 ([@ryz310](https://github.com/ryz310))
+- [#13](https://github.com/ryz310/redis-object-periodical/pull/13) Bump rspec from 3.10.0 to 3.11.0 ([@ryz310](https://github.com/ryz310))
+- [#14](https://github.com/ryz310/redis-object-periodical/pull/14) Bump timecop from 0.9.4 to 0.9.5 ([@ryz310](https://github.com/ryz310))
+- [#12](https://github.com/ryz310/redis-object-periodical/pull/12) Bump redis-objects from 1.5.1 to 1.7.0 ([@ryz310](https://github.com/ryz310))
 
 ### Misc
 
-- [#19](https://github.com/ryz310/redis-object-daily-counter/pull/19) Reduce similar source codes with meta programming ([@ryz310](https://github.com/ryz310))
+- [#19](https://github.com/ryz310/redis-object-periodical/pull/19) Reduce similar source codes with meta programming ([@ryz310](https://github.com/ryz310))
 
 ## v0.3.0 (Sep 23, 2021)
 
 ### Feature
 
-- [#7](https://github.com/ryz310/redis-object-daily-counter/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
+- [#7](https://github.com/ryz310/redis-object-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
 
 > You can use `daily_set` in addition to the standard features of Redis::Objects.
 >
@@ -69,7 +69,7 @@
 
 ### Breaking Change
 
-- [#7](https://github.com/ryz310/redis-object-daily-counter/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
+- [#7](https://github.com/ryz310/redis-object-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
 
 > Rename the method from #delete to #delete_at a73251f
 >
@@ -95,8 +95,8 @@
 
 ### Feature
 
-- [#3](https://github.com/ryz310/redis-objects-daily-counter/pull/3) Support time zone ([@ryz310](https://github.com/ryz310))
-- [#4](https://github.com/ryz310/redis-objects-daily-counter/pull/4) Add daily counter family ([@ryz310](https://github.com/ryz310))
+- [#3](https://github.com/ryz310/redis-objects-periodical/pull/3) Support time zone ([@ryz310](https://github.com/ryz310))
+- [#4](https://github.com/ryz310/redis-objects-periodical/pull/4) Add daily counter family ([@ryz310](https://github.com/ryz310))
   - `annual_counter`
   - `monthly_counter`
   - `weekly_counter`
@@ -105,7 +105,7 @@
 
 ### Misc
 
-- [#2](https://github.com/ryz310/redis-objects-daily-counter/pull/2) Install circle ci ([@ryz310](https://github.com/ryz310))
+- [#2](https://github.com/ryz310/redis-objects-periodical/pull/2) Install circle ci ([@ryz310](https://github.com/ryz310))
 
 ## v0.1.0 (Sep 12, 2021)
 

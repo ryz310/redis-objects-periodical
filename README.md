@@ -1,15 +1,15 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-daily-counter.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-daily-counter) [![Gem Version](https://badge.fury.io/rb/redis-objects-daily-counter.svg)](https://badge.fury.io/rb/redis-objects-daily-counter) [![Maintainability](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/1e1cb0d70e4f80e0fdd5/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-daily-counter/test_coverage)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical) [![Maintainability](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-periodical/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-periodical/test_coverage)
 
-# Redis::Objects::Daily::Counter and Daily::Set
+# Redis::Objects::Periodical
 
-This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-objects) gem. Once install this gem, you can use the daily counter, the daily set, etc. in addition to the standard features of Redis::Objects. These counters and sets are useful for measuring conversions, implementing API rate limiting, MAU, DAU, and more.
+This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-objects) gem. Once install this gem, you can use the periodical counter, the periodical set, etc. in addition to the standard features of Redis::Objects. These counters and sets are useful for measuring conversions, implementing API rate limiting, MAU, DAU, and more.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'redis-objects-daily-counter'
+gem 'redis-objects-periodical'
 ```
 
 If you want to know about installation and standard usage, please see Redis::Objects' GitHub page.
@@ -58,9 +58,9 @@ end_date = Date.new(2021, 4, 2)
 homepage.pv.range(start_date, end_date) # [3, 2]
 ```
 
-### Daily Counters
+### Periodical Counters
 
-The daily counter automatically switches the save destination when the date changes.
+The periodical counters automatically switches the save destination when the date changes.
 You can access past dates counted values like Ruby arrays:
 
 ```rb
@@ -83,7 +83,7 @@ homepage.pv.at(Date.new(2021, 4, 2)) # => #<Redis::Counter key="homepage:1:pv:20
 homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 ```
 
-#### Daily Counters Family
+#### Periodical Counters Family
 
 - `annual_counter`
   - Key format: `model_name:id:field_name:yyyy`
@@ -99,9 +99,9 @@ homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 - `minutely_counter`
   - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
-### Daily Hashes
+### Periodical Hashes
 
-The daily hash also automatically switches the save destination when the date changes.
+The periodical hashes also automatically switches the save destination when the date changes.
 
 ```rb
 # 2021-04-01
@@ -131,7 +131,7 @@ homepage.browsing_history.at(Date.new(2021, 4, 2)) # => #<Redis::HashKey key="ho
 homepage.browsing_history.at(Date.new(2021, 4, 2)).all # { 'item1' => '3', 'item3' => '5' }
 ```
 
-#### Daily Hashes Family
+#### Periodical Hashes Family
 
 - `annual_hash_key`
   - Key format: `model_name:id:field_name:yyyy`
@@ -147,9 +147,9 @@ homepage.browsing_history.at(Date.new(2021, 4, 2)).all # { 'item1' => '3', 'item
 - `minutely_hash_key`
   - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
-### Daily Sets
+### Periodical Sets
 
-The daily set also automatically switches the save destination when the date changes.
+The periodical sets also automatically switches the save destination when the date changes.
 
 ```rb
 # 2021-04-01
@@ -179,7 +179,7 @@ homepage.dau.at(Date.new(2021, 4, 2)) # => #<Redis::Set key="homepage:1:dau:2021
 homepage.dau.at(Date.new(2021, 4, 2)).members # ['user2', 'user3']
 ```
 
-#### Daily Sets Family
+#### Periodical Sets Family
 
 - `annual_set`
   - Key format: `model_name:id:field_name:yyyy`
@@ -211,7 +211,7 @@ Please use the following command:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redis-objects-daily-counter. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/redis-objects-daily-counter/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redis-objects-periodical. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/redis-objects-periodical/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -219,4 +219,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Redis::Objects::Daily::Counter project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/redis-objects-daily-counter/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Redis::Objects::Daily::Counter project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/redis-objects-periodical/blob/master/CODE_OF_CONDUCT.md).

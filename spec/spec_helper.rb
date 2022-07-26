@@ -5,7 +5,7 @@ SimpleCov.start
 
 require 'pry'
 require 'timecop'
-require 'redis-objects-daily-counter'
+require 'redis-objects-periodical'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
