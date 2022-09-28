@@ -5,7 +5,7 @@ class Redis
     module Daily
       private
 
-      def redis_daily_field_key(date_or_time)
+      def redis_periodical_field_key(date_or_time)
         date_key = date_or_time.strftime('%Y-%m-%d')
         [original_key, date_key].flatten.join(':')
       end
