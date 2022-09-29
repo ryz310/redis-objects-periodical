@@ -94,6 +94,14 @@ RSpec.describe Redis::DailySet do
       end
     end
 
+    context 'with date and length (zero)' do
+      let(:date) { Date.new(2021, 4, 2) }
+
+      it 'returns an empty array' do
+        expect(homepage.daily_active_users[date, 0]).to eq []
+      end
+    end
+
     context 'with range of date' do
       let(:range) do
         Date.new(2021, 4, 1)..Date.new(2021, 4, 2)
@@ -120,6 +128,14 @@ RSpec.describe Redis::DailySet do
       it 'returns the members added within the duration' do
         expect(homepage.daily_active_users[time, 2])
           .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2022, 4, 1, 10, 20, 30) }
+
+      it 'returns an empty array' do
+        expect(homepage.daily_active_users[time, 0]).to eq []
       end
     end
 

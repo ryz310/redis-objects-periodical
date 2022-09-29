@@ -102,6 +102,14 @@ RSpec.describe Redis::AnnualHashKey do
       end
     end
 
+    context 'with date and length (zero)' do
+      let(:date) { Date.new(2022, 4, 1) }
+
+      it 'returns an empty hash' do
+        expect(homepage.browsing_history[date, 0]).to eq({})
+      end
+    end
+
     context 'with range of date' do
       let(:range) do
         Date.new(2021, 4, 1)..Date.new(2022, 4, 1)
@@ -127,6 +135,14 @@ RSpec.describe Redis::AnnualHashKey do
       it 'returns the fields counted within the duration' do
         expect(homepage.browsing_history[time, 2])
           .to eq({ 'item1' => '3', 'item2' => 'a,1', 'item3' => '7', 'item4' => '1' })
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2022, 4, 1, 10, 20, 30) }
+
+      it 'returns an empty hash' do
+        expect(homepage.browsing_history[time, 0]).to eq({})
       end
     end
 

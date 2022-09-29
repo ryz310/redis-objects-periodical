@@ -94,6 +94,14 @@ RSpec.describe Redis::AnnualCounter do
       end
     end
 
+    context 'with date and length (zero)' do
+      let(:date) { Date.new(2022, 4, 1) }
+
+      it 'returns an empty array' do
+        expect(homepage.pv[date, 0]).to eq []
+      end
+    end
+
     context 'with range of date' do
       let(:range) do
         Date.new(2021, 4, 1)..Date.new(2022, 4, 1)
@@ -117,6 +125,14 @@ RSpec.describe Redis::AnnualCounter do
 
       it 'returns the values counted within the duration' do
         expect(homepage.pv[time, 2]).to eq [11, 12]
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2022, 4, 1, 10, 20, 30) }
+
+      it 'returns an empty array' do
+        expect(homepage.pv[time, 0]).to eq []
       end
     end
 
