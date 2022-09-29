@@ -92,9 +92,51 @@ RSpec.describe Redis::DailyCounter do
       end
     end
 
-    context 'with range' do
+    context 'with date and length (zero)' do
+      let(:date) { Date.new(2021, 4, 2) }
+
+      it 'returns an empty array' do
+        expect(homepage.pv[date, 0]).to eq []
+      end
+    end
+
+    context 'with range of date' do
       let(:range) do
         Date.new(2021, 4, 1)..Date.new(2021, 4, 2)
+      end
+
+      it 'returns the values counted within the duration' do
+        expect(homepage.pv[range]).to eq [10, 11]
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 1, 10, 20, 30) }
+
+      it 'returns the value counted the day' do
+        expect(homepage.pv[time]).to eq 10
+      end
+    end
+
+    context 'with time and length' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns the values counted within the duration' do
+        expect(homepage.pv[time, 2]).to eq [11, 12]
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns an empty array' do
+        expect(homepage.pv[time, 0]).to eq []
+      end
+    end
+
+    context 'with range of time' do
+      let(:range) do
+        Time.local(2021, 4, 1, 10, 20, 30)..Time.local(2021, 4, 2, 10, 20, 30)
       end
 
       it 'returns the values counted within the duration' do
@@ -104,28 +146,62 @@ RSpec.describe Redis::DailyCounter do
   end
 
   describe '#delete_at' do
-    it 'deletes the value on the day' do
-      date = Date.new(2021, 4, 2)
-      expect { homepage.pv.delete_at(date) }
-        .to change { homepage.pv.at(date) }
-        .from(11).to(0)
+    context 'with date' do
+      let(:date) { Date.new(2021, 4, 2) }
+
+      it 'deletes the value on the day' do
+        expect { homepage.pv.delete_at(date) }
+          .to change { homepage.pv.at(date) }
+          .from(11).to(0)
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'deletes the value on the day' do
+        expect { homepage.pv.delete_at(time) }
+          .to change { homepage.pv.at(time) }
+          .from(11).to(0)
+      end
     end
   end
 
   describe '#range' do
-    let(:start_date) { Date.new(2021, 4, 1) }
-    let(:end_date) { Date.new(2021, 4, 2) }
+    context 'with date' do
+      let(:start_date) { Date.new(2021, 4, 1) }
+      let(:end_date) { Date.new(2021, 4, 2) }
 
-    it 'returns the values counted within the duration' do
-      expect(homepage.pv.range(start_date, end_date)).to eq [10, 11]
+      it 'returns the values counted within the duration' do
+        expect(homepage.pv.range(start_date, end_date)).to eq [10, 11]
+      end
+    end
+
+    context 'with time' do
+      let(:start_time) { Time.local(2021, 4, 1, 10, 20, 30) }
+      let(:end_time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns the values counted within the duration' do
+        expect(homepage.pv.range(start_time, end_time)).to eq [10, 11]
+      end
     end
   end
 
   describe '#at' do
-    let(:date) { Date.new(2021, 4, 2) }
+    context 'with date' do
+      let(:date) { Date.new(2021, 4, 2) }
 
-    it 'returns a counter object counted the day' do
-      expect(homepage.pv.at(date).value).to eq 11
+      it 'returns a counter object counted the day' do
+        expect(homepage.pv.at(date).value).to eq 11
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns a counter object counted the day' do
+        expect(homepage.pv.at(time).value).to eq 11
+      end
     end
   end
 end

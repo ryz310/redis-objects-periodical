@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 
 # Specify your gem's dependencies in redis-objects-periodical.gemspec
-gemspec name: 'redis-objects-periodical'
+gemspec
 
 gem 'bundler', '>= 2.0'
 gem 'pry-byebug'

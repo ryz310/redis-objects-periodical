@@ -83,20 +83,28 @@ RSpec.describe Redis::HourlyHashKey do
   end
 
   describe '#[]' do
-    context 'with date' do
-      let(:date) { Time.local(2021, 4, 1, 10) }
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 1, 10) }
 
       it 'returns the field counted the year' do
-        expect(homepage.browsing_history[date]).to eq({ 'item1' => '1.5', 'item2' => '2' })
+        expect(homepage.browsing_history[time]).to eq({ 'item1' => '1.5', 'item2' => '2' })
       end
     end
 
-    context 'with date and length' do
-      let(:date) { Time.local(2021, 4, 1, 11) }
+    context 'with time and length' do
+      let(:time) { Time.local(2021, 4, 1, 11) }
 
       it 'returns the fields counted within the duration' do
-        expect(homepage.browsing_history[date, 2])
+        expect(homepage.browsing_history[time, 2])
           .to eq({ 'item1' => '3', 'item2' => 'a,1', 'item3' => '7', 'item4' => '1' })
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2021, 4, 1, 11) }
+
+      it 'returns an empty hash' do
+        expect(homepage.browsing_history[time, 0]).to eq({})
       end
     end
 
@@ -113,29 +121,30 @@ RSpec.describe Redis::HourlyHashKey do
   end
 
   describe '#delete_at' do
+    let(:time) { Time.local(2021, 4, 1, 11) }
+
     it 'deletes the hash on the year' do
-      date = Time.local(2021, 4, 1, 11)
-      expect { homepage.browsing_history.delete_at(date) }
-        .to change { homepage.browsing_history.at(date) }
+      expect { homepage.browsing_history.delete_at(time) }
+        .to change { homepage.browsing_history.at(time) }
         .from({ 'item1' => '3', 'item2' => 'a', 'item3' => '5' }).to({})
     end
   end
 
   describe '#range' do
-    let(:start_date) { Time.local(2021, 4, 1, 10) }
-    let(:end_date) { Time.local(2021, 4, 1, 11) }
+    let(:start_time) { Time.local(2021, 4, 1, 10) }
+    let(:end_time) { Time.local(2021, 4, 1, 11) }
 
     it 'returns the hash counted within the duration' do
-      expect(homepage.browsing_history.range(start_date, end_date))
+      expect(homepage.browsing_history.range(start_time, end_time))
         .to eq({ 'item1' => '4.5', 'item2' => '2,a', 'item3' => '5' })
     end
   end
 
   describe '#at' do
-    let(:date) { Time.local(2021, 4, 1, 11) }
+    let(:time) { Time.local(2021, 4, 1, 11) }
 
     it 'returns a counter object counted the year' do
-      expect(homepage.browsing_history.at(date).all)
+      expect(homepage.browsing_history.at(time).all)
         .to eq({ 'item1' => '3', 'item2' => 'a', 'item3' => '5' })
     end
   end

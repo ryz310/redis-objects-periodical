@@ -5,7 +5,7 @@ class Redis
     module Minutely
       private
 
-      def redis_daily_field_key(time)
+      def redis_periodical_field_key(time)
         time_key = time.strftime('%Y-%m-%dT%H:%M')
         [original_key, time_key].flatten.join(':')
       end

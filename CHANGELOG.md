@@ -1,38 +1,66 @@
 # Change log
 
+## v0.5.0 (Sep 29, 2022)
+
+### Feature
+
+- [#34](https://github.com/ryz310/redis-object-daily-counter/pull/34) Enhanced type casting from Time to Date ([@ryz310](https://github.com/ryz310))
+
+Enhances casting from `Time` to `Date`.
+
+#### Before
+
+```rb
+homepage = Homepage.new
+homepage.daily_active_users[Date.new(2021, 4, 1)] # OK
+homepage.daily_active_users[Time.local(2021, 4, 1, 0, 0, 0)] # Error!
+```
+
+#### After
+
+```rb
+homepage = Homepage.new
+homepage.daily_active_users[Date.new(2021, 4, 1)] # OK
+homepage.daily_active_users[Time.local(2021, 4, 1, 0, 0, 0)] # OK
+```
+
+### Misc
+
+- [#25](https://github.com/ryz310/redis-object-daily-counter/pull/25) Remove needless files ([@ryz310](https://github.com/ryz310))
+
 ## v0.4.1 (Jul 27, 2022)
 
 ### Misc
 
-- [#22](https://github.com/ryz310/redis-object-periodical/pull/22) Rename from redis-object-daily-counter to redis-object-periodical ([@ryz310](https://github.com/ryz310))
+- [#22](https://github.com/ryz310/redis-objects-periodical/pull/22) Rename from redis-object-daily-counter to redis-objects-periodical ([@ryz310](https://github.com/ryz310))
 
 ## v0.4.0 (Jul 26, 2022)
 
 ### Feature
 
-- [#17](https://github.com/ryz310/redis-object-periodical/pull/17) Support `Redis::HashKey` as a recurring object ([@ryz310](https://github.com/ryz310))
+- [#17](https://github.com/ryz310/redis-objects-periodical/pull/17) Support `Redis::HashKey` as a recurring object ([@ryz310](https://github.com/ryz310))
 
 ### Breaking Change
 
-- [#18](https://github.com/ryz310/redis-object-periodical/pull/18) Bump up Ruby 3.1 and drop support Ruby 2.6 ([@ryz310](https://github.com/ryz310))
+- [#18](https://github.com/ryz310/redis-objects-periodical/pull/18) Bump up Ruby 3.1 and drop support Ruby 2.6 ([@ryz310](https://github.com/ryz310))
 
 ### Dependabot
 
-- [#16](https://github.com/ryz310/redis-object-periodical/pull/16) Bump yard from 0.9.26 to 0.9.28 ([@ryz310](https://github.com/ryz310))
-- [#15](https://github.com/ryz310/redis-object-periodical/pull/15) Bump rspec_junit_formatter from 0.4.1 to 0.5.1 ([@ryz310](https://github.com/ryz310))
-- [#13](https://github.com/ryz310/redis-object-periodical/pull/13) Bump rspec from 3.10.0 to 3.11.0 ([@ryz310](https://github.com/ryz310))
-- [#14](https://github.com/ryz310/redis-object-periodical/pull/14) Bump timecop from 0.9.4 to 0.9.5 ([@ryz310](https://github.com/ryz310))
-- [#12](https://github.com/ryz310/redis-object-periodical/pull/12) Bump redis-objects from 1.5.1 to 1.7.0 ([@ryz310](https://github.com/ryz310))
+- [#16](https://github.com/ryz310/redis-objects-periodical/pull/16) Bump yard from 0.9.26 to 0.9.28 ([@ryz310](https://github.com/ryz310))
+- [#15](https://github.com/ryz310/redis-objects-periodical/pull/15) Bump rspec_junit_formatter from 0.4.1 to 0.5.1 ([@ryz310](https://github.com/ryz310))
+- [#13](https://github.com/ryz310/redis-objects-periodical/pull/13) Bump rspec from 3.10.0 to 3.11.0 ([@ryz310](https://github.com/ryz310))
+- [#14](https://github.com/ryz310/redis-objects-periodical/pull/14) Bump timecop from 0.9.4 to 0.9.5 ([@ryz310](https://github.com/ryz310))
+- [#12](https://github.com/ryz310/redis-objects-periodical/pull/12) Bump redis-objects from 1.5.1 to 1.7.0 ([@ryz310](https://github.com/ryz310))
 
 ### Misc
 
-- [#19](https://github.com/ryz310/redis-object-periodical/pull/19) Reduce similar source codes with meta programming ([@ryz310](https://github.com/ryz310))
+- [#19](https://github.com/ryz310/redis-objects-periodical/pull/19) Reduce similar source codes with meta programming ([@ryz310](https://github.com/ryz310))
 
 ## v0.3.0 (Sep 23, 2021)
 
 ### Feature
 
-- [#7](https://github.com/ryz310/redis-object-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
+- [#7](https://github.com/ryz310/redis-objects-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
 
 > You can use `daily_set` in addition to the standard features of Redis::Objects.
 >
@@ -75,7 +103,7 @@
 
 ### Breaking Change
 
-- [#7](https://github.com/ryz310/redis-object-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
+- [#7](https://github.com/ryz310/redis-objects-periodical/pull/7) Add daily set ([@ryz310](https://github.com/ryz310))
 
 > Rename the method from #delete to #delete_at a73251f
 >
