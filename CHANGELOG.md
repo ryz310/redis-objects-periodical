@@ -1,5 +1,18 @@
 # Change log
 
+## v0.5.0 (Sep 29, 2022)
+
+### Feature
+### Bugfix
+### Security
+### Breaking Change
+### Rubocop Challenge
+### Dependabot
+### Misc
+
+* [#25](https://github.com/ryz310/redis-object-daily-counter/pull/25) Remove needless files ([@ryz310](https://github.com/ryz310))
+* [#34](https://github.com/ryz310/redis-object-daily-counter/pull/34) Enhanced type conversion ([@ryz310](https://github.com/ryz310))
+
 ## v0.4.1 (Jul 27, 2022)
 
 ### Misc
