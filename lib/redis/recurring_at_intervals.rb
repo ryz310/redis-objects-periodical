@@ -4,7 +4,7 @@ class Redis
   module RecurringAtIntervals
     def initialize(key, *args)
       @original_key = key
-      super(redis_daily_field_key(current_time), *args)
+      super(redis_periodical_field_key(current_time), *args)
     end
 
     attr_reader :original_key
@@ -19,23 +19,23 @@ class Redis
         when -1 then nil  # Ruby does this (a bit weird)
         end
       else
-        get_value_from_redis(redis_daily_field_key(date_or_time))
+        get_value_from_redis(redis_periodical_field_key(date_or_time))
       end
     end
     alias slice []
 
     def delete_at(date_or_time)
-      delete_from_redis(redis_daily_field_key(date_or_time))
+      delete_from_redis(redis_periodical_field_key(date_or_time))
     end
 
     def range(start_date_or_time, end_date_or_time)
       keys = []
-      date_or_time = start_date_or_time
+      date_or_time = normalize(start_date_or_time)
 
       loop do
-        break if date_or_time > end_date_or_time
+        break if date_or_time > normalize(end_date_or_time)
 
-        keys << redis_daily_field_key(date_or_time)
+        keys << redis_periodical_field_key(date_or_time)
         date_or_time = next_key(date_or_time)
       end
 
@@ -43,7 +43,7 @@ class Redis
     end
 
     def at(date_or_time)
-      get_redis_object(redis_daily_field_key(date_or_time))
+      get_redis_object(redis_periodical_field_key(date_or_time))
     end
 
     def current_time
@@ -68,12 +68,16 @@ class Redis
       raise 'not implemented'
     end
 
-    def redis_daily_field_key(_date_or_time)
+    def redis_periodical_field_key(_date_or_time)
       raise 'not implemented'
     end
 
-    def next_key(_date, _length = 1)
+    def next_key(_date_or_time, _length = 1)
       raise 'not implemented'
+    end
+
+    def normalize(date_or_time)
+      next_key(date_or_time, 0)
     end
   end
 end

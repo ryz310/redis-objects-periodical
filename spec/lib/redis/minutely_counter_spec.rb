@@ -76,19 +76,27 @@ RSpec.describe Redis::MinutelyCounter do
   end
 
   describe '#[]' do
-    context 'with date' do
-      let(:date) { Time.local(2021, 4, 1, 10, 20) }
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 1, 10, 20) }
 
       it 'returns the value counted the minute' do
-        expect(homepage.pv[date]).to eq 10
+        expect(homepage.pv[time]).to eq 10
       end
     end
 
-    context 'with date and length' do
-      let(:date) { Time.local(2021, 4, 1, 10, 21) }
+    context 'with time and length' do
+      let(:time) { Time.local(2021, 4, 1, 10, 21) }
 
       it 'returns the values counted within the duration' do
-        expect(homepage.pv[date, 2]).to eq [11, 12]
+        expect(homepage.pv[time, 2]).to eq [11, 12]
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2021, 4, 1, 10, 21) }
+
+      it 'returns an empty array' do
+        expect(homepage.pv[time, 0]).to eq []
       end
     end
 
@@ -104,28 +112,29 @@ RSpec.describe Redis::MinutelyCounter do
   end
 
   describe '#delete_at' do
+    let(:time) { Time.local(2021, 4, 1, 10, 21) }
+
     it 'deletes the value on the minute' do
-      date = Time.local(2021, 4, 1, 10, 21)
-      expect { homepage.pv.delete_at(date) }
-        .to change { homepage.pv.at(date) }
+      expect { homepage.pv.delete_at(time) }
+        .to change { homepage.pv.at(time) }
         .from(11).to(0)
     end
   end
 
   describe '#range' do
-    let(:start_date) { Time.local(2021, 4, 1, 10, 20) }
-    let(:end_date) { Time.local(2021, 4, 1, 10, 21) }
+    let(:start_time) { Time.local(2021, 4, 1, 10, 20) }
+    let(:end_time) { Time.local(2021, 4, 1, 10, 21) }
 
     it 'returns the values counted within the duration' do
-      expect(homepage.pv.range(start_date, end_date)).to eq [10, 11]
+      expect(homepage.pv.range(start_time, end_time)).to eq [10, 11]
     end
   end
 
   describe '#at' do
-    let(:date) { Time.local(2021, 4, 1, 10, 21) }
+    let(:time) { Time.local(2021, 4, 1, 10, 21) }
 
     it 'returns a counter object counted the minute' do
-      expect(homepage.pv.at(date).value).to eq 11
+      expect(homepage.pv.at(time).value).to eq 11
     end
   end
 end

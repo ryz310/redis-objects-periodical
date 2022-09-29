@@ -76,21 +76,29 @@ RSpec.describe Redis::MinutelySet do
   end
 
   describe '#[]' do
-    context 'with date' do
-      let(:date) { Time.local(2021, 4, 1, 10, 20) }
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 1, 10, 20) }
 
       it 'returns the members added the minute' do
-        expect(homepage.minutely_active_users[date])
+        expect(homepage.minutely_active_users[time])
           .to contain_exactly('user1', 'user2', 'user3')
       end
     end
 
-    context 'with date and length' do
-      let(:date) { Time.local(2021, 4, 1, 10, 21) }
+    context 'with time and length' do
+      let(:time) { Time.local(2021, 4, 1, 10, 21) }
 
       it 'returns the members added within the duration' do
-        expect(homepage.minutely_active_users[date, 2])
+        expect(homepage.minutely_active_users[time, 2])
           .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
+    end
+
+    context 'with time and length (zero)' do
+      let(:time) { Time.local(2021, 4, 1, 10, 21) }
+
+      it 'returns an empty array' do
+        expect(homepage.minutely_active_users[time, 0]).to eq []
       end
     end
 
@@ -107,31 +115,32 @@ RSpec.describe Redis::MinutelySet do
   end
 
   describe '#delete_at' do
+    let(:time) { Time.local(2021, 4, 1, 10, 21) }
+
     it 'deletes the members on the minute' do
-      date = Time.local(2021, 4, 1, 10, 21)
-      expect { homepage.minutely_active_users.delete_at(date) }
-        .to change { homepage.minutely_active_users.at(date).length }
+      expect { homepage.minutely_active_users.delete_at(time) }
+        .to change { homepage.minutely_active_users.at(time).length }
         .from(4).to(0)
     end
   end
 
   describe '#range' do
-    let(:start_date) { Time.local(2021, 4, 1, 10, 20) }
-    let(:end_date) { Time.local(2021, 4, 1, 10, 21) }
+    let(:start_time) { Time.local(2021, 4, 1, 10, 20) }
+    let(:end_time) { Time.local(2021, 4, 1, 10, 21) }
 
     it 'returns the members added within the duration' do
-      expect(homepage.minutely_active_users.range(start_date, end_date))
+      expect(homepage.minutely_active_users.range(start_time, end_time))
         .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
     end
   end
 
   describe '#at' do
-    let(:date) { Time.local(2021, 4, 1, 10, 21) }
+    let(:time) { Time.local(2021, 4, 1, 10, 21) }
 
     it 'returns a set object added the minute' do
-      expect(homepage.minutely_active_users.at(date).members)
+      expect(homepage.minutely_active_users.at(time).members)
         .to contain_exactly('user1', 'user2', 'user4', 'user5')
-      expect(homepage.minutely_active_users.at(date).length)
+      expect(homepage.minutely_active_users.at(time).length)
         .to eq 4
     end
   end
