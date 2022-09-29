@@ -10,8 +10,8 @@ class Redis
         [original_key, date_key].flatten.join(':')
       end
 
-      def next_key(date, length = 1)
-        date + length
+      def next_key(date_or_time, length = 1)
+        date_or_time.to_date + length
       end
     end
   end

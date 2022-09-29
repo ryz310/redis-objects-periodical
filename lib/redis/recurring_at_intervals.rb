@@ -30,10 +30,10 @@ class Redis
 
     def range(start_date_or_time, end_date_or_time)
       keys = []
-      date_or_time = start_date_or_time
+      date_or_time = normalize(start_date_or_time)
 
       loop do
-        break if date_or_time > end_date_or_time
+        break if date_or_time > normalize(end_date_or_time)
 
         keys << redis_periodical_field_key(date_or_time)
         date_or_time = next_key(date_or_time)
@@ -72,8 +72,12 @@ class Redis
       raise 'not implemented'
     end
 
-    def next_key(_date, _length = 1)
+    def next_key(_date_or_time, _length = 1)
       raise 'not implemented'
+    end
+
+    def normalize(date_or_time)
+      next_key(date_or_time, 0)
     end
   end
 end

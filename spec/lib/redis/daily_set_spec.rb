@@ -94,9 +94,38 @@ RSpec.describe Redis::DailySet do
       end
     end
 
-    context 'with range' do
+    context 'with range of date' do
       let(:range) do
         Date.new(2021, 4, 1)..Date.new(2021, 4, 2)
+      end
+
+      it 'returns the members counted within the duration' do
+        expect(homepage.daily_active_users[range])
+          .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 1, 10, 20, 30) }
+
+      it 'returns the members added the day' do
+        expect(homepage.daily_active_users[time])
+          .to contain_exactly('user1', 'user2', 'user3')
+      end
+    end
+
+    context 'with time and length' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns the members added within the duration' do
+        expect(homepage.daily_active_users[time, 2])
+          .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
+    end
+
+    context 'with range of time' do
+      let(:range) do
+        Time.local(2021, 4, 1, 10, 20, 30)..Time.local(2021, 4, 2, 10, 20, 30)
       end
 
       it 'returns the members counted within the duration' do
@@ -107,32 +136,70 @@ RSpec.describe Redis::DailySet do
   end
 
   describe '#delete_at' do
-    it 'deletes the members on the day' do
-      date = Date.new(2021, 4, 2)
-      expect { homepage.daily_active_users.delete_at(date) }
-        .to change { homepage.daily_active_users.at(date).length }
-        .from(4).to(0)
+    context 'with date' do
+      let(:date) { Date.new(2021, 4, 2) }
+
+      it 'deletes the members on the day' do
+        expect { homepage.daily_active_users.delete_at(date) }
+          .to change { homepage.daily_active_users.at(date).length }
+          .from(4).to(0)
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'deletes the members on the day' do
+        expect { homepage.daily_active_users.delete_at(time) }
+          .to change { homepage.daily_active_users.at(time).length }
+          .from(4).to(0)
+      end
     end
   end
 
   describe '#range' do
-    let(:start_date) { Date.new(2021, 4, 1) }
-    let(:end_date) { Date.new(2021, 4, 2) }
+    context 'with date' do
+      let(:start_date) { Date.new(2021, 4, 1) }
+      let(:end_date) { Date.new(2021, 4, 2) }
 
-    it 'returns the members added within the duration' do
-      expect(homepage.daily_active_users.range(start_date, end_date))
-        .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      it 'returns the members added within the duration' do
+        expect(homepage.daily_active_users.range(start_date, end_date))
+          .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
+    end
+
+    context 'with time' do
+      let(:start_time) { Time.local(2021, 4, 1, 10, 20, 30) }
+      let(:end_time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns the members added within the duration' do
+        expect(homepage.daily_active_users.range(start_time, end_time))
+          .to contain_exactly('user1', 'user2', 'user3', 'user4', 'user5')
+      end
     end
   end
 
   describe '#at' do
-    let(:date) { Date.new(2021, 4, 2) }
+    context 'with date' do
+      let(:date) { Date.new(2021, 4, 2) }
 
-    it 'returns a set object added the day' do
-      expect(homepage.daily_active_users.at(date).members)
-        .to contain_exactly('user1', 'user2', 'user4', 'user5')
-      expect(homepage.daily_active_users.at(date).length)
-        .to eq 4
+      it 'returns a set object added the day' do
+        expect(homepage.daily_active_users.at(date).members)
+          .to contain_exactly('user1', 'user2', 'user4', 'user5')
+        expect(homepage.daily_active_users.at(date).length)
+          .to eq 4
+      end
+    end
+
+    context 'with time' do
+      let(:time) { Time.local(2021, 4, 2, 10, 20, 30) }
+
+      it 'returns a set object added the day' do
+        expect(homepage.daily_active_users.at(time).members)
+          .to contain_exactly('user1', 'user2', 'user4', 'user5')
+        expect(homepage.daily_active_users.at(time).length)
+          .to eq 4
+      end
     end
   end
 end
