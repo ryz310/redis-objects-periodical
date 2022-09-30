@@ -23,6 +23,9 @@ Naming/FileName:
   Exclude:
     - "lib/redis-objects-periodical.rb"
 
+Style/DocumentDynamicEvalDefinition:
+  Enabled: false
+
 Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: comma
 

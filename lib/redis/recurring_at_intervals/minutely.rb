@@ -11,7 +11,7 @@ class Redis
       end
 
       def next_key(time, length = 1)
-        time + 60 * length
+        time + (60 * length)
       end
     end
   end
