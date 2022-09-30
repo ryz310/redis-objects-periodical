@@ -11,7 +11,7 @@ class Redis
       end
 
       def next_key(date_or_time, length = 1)
-        date_or_time.to_date + 7 * length
+        date_or_time.to_date + (7 * length)
       end
     end
   end
