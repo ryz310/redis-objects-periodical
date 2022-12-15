@@ -23,7 +23,7 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
             )
           end
 
-          define_method(:"#\{name\}=") do |values|
+          define_method(:"#\{name}=") do |values|
             hash_key = public_send(name)
 
             redis.pipelined do
