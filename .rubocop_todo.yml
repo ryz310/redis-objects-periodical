@@ -10,16 +10,17 @@
 # Configuration parameters: AllowedConstants.
 Style/Documentation:
   Exclude:
-    - 'spec/**/*'
-    - 'test/**/*'
-    - 'lib/redis-objects-periodical.rb'
-    - 'lib/redis/base_counter_object.rb'
-    - 'lib/redis/base_hash_key_object.rb'
-    - 'lib/redis/base_set_object.rb'
-    - 'lib/redis/recurring_at_intervals.rb'
-    - 'lib/redis/recurring_at_intervals/annual.rb'
-    - 'lib/redis/recurring_at_intervals/daily.rb'
-    - 'lib/redis/recurring_at_intervals/hourly.rb'
-    - 'lib/redis/recurring_at_intervals/minutely.rb'
-    - 'lib/redis/recurring_at_intervals/monthly.rb'
-    - 'lib/redis/recurring_at_intervals/weekly.rb'
+    - "spec/**/*"
+    - "test/**/*"
+    - "lib/redis-objects-periodical.rb"
+    - "lib/redis/base_counter_object.rb"
+    - "lib/redis/base_hash_key_object.rb"
+    - "lib/redis/base_set_object.rb"
+    - "lib/redis/base_value_object.rb"
+    - "lib/redis/recurring_at_intervals.rb"
+    - "lib/redis/recurring_at_intervals/annual.rb"
+    - "lib/redis/recurring_at_intervals/daily.rb"
+    - "lib/redis/recurring_at_intervals/hourly.rb"
+    - "lib/redis/recurring_at_intervals/minutely.rb"
+    - "lib/redis/recurring_at_intervals/monthly.rb"
+    - "lib/redis/recurring_at_intervals/weekly.rb"
