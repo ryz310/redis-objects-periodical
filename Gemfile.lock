@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redis-objects-periodical (0.6.0)
+    redis-objects-periodical (0.7.0)
       redis-objects (~> 1.0)
 
 GEM
