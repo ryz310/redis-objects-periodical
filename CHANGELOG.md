@@ -1,5 +1,25 @@
 # Change log
 
+## v0.6.0 (Feb 12, 2023)
+
+### Feature
+
+- [#125](https://github.com/ryz310/redis-object-daily-counter/pull/125) Support Ruby 3.2 ([@ryz310](https://github.com/ryz310))
+
+### Rubocop Challenge
+
+- [#104](https://github.com/ryz310/redis-object-daily-counter/pull/104) Style/RedundantStringEscape-20221214233055 ([@ryz310](https://github.com/ryz310))
+- [#124](https://github.com/ryz310/redis-object-daily-counter/pull/124) Re-generate .rubocop_todo.yml with RuboCop v1.45.1 ([@ryz310](https://github.com/ryz310))
+
+### Dependabot
+
+- [#70](https://github.com/ryz310/redis-object-daily-counter/pull/70) Bump rspec from 3.11.0 to 3.12.0 ([@ryz310](https://github.com/ryz310))
+- [#101](https://github.com/ryz310/redis-object-daily-counter/pull/101) Bump timecop from 0.9.5 to 0.9.6 ([@ryz310](https://github.com/ryz310))
+- [#109](https://github.com/ryz310/redis-object-daily-counter/pull/109) Bump rubocop-performance from 1.15.1 to 1.15.2 ([@ryz310](https://github.com/ryz310))
+- [#110](https://github.com/ryz310/redis-object-daily-counter/pull/110) Bump simplecov from 0.21.2 to 0.22.0 ([@ryz310](https://github.com/ryz310))
+- [#116](https://github.com/ryz310/redis-object-daily-counter/pull/116) Bump rubocop-rspec from 2.18.0 to 2.18.1 ([@ryz310](https://github.com/ryz310))
+- [#122](https://github.com/ryz310/redis-object-daily-counter/pull/122) Bump rubocop-performance from 1.15.2 to 1.16.0 ([@ryz310](https://github.com/ryz310))
+
 ## v0.5.0 (Sep 29, 2022)
 
 ### Feature
