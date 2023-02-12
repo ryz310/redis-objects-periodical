@@ -3,14 +3,42 @@
 ## v0.7.0 (Feb 12, 2023)
 
 ### Feature
-### Bugfix
-### Security
-### Breaking Change
-### Rubocop Challenge
-### Dependabot
-### Misc
 
-* [#128](https://github.com/ryz310/redis-object-daily-counter/pull/128) Periodical::Value ([@ryz310](https://github.com/ryz310))
+- [#128](https://github.com/ryz310/redis-object-daily-counter/pull/128) Support`Redis::Value` as a periodical object ([@ryz310](https://github.com/ryz310))
+
+> The periodical values automatically switches the save destination when the date changes.
+>
+> ```rb
+> class Homepage
+>   include Redis::Objects
+>
+>   daily_value :cache, expireat: -> { Time.now + 2_678_400 } # about a month
+>
+>   def id
+>     1
+>   end
+> end
+>
+> homepage = Homepage.new
+>
+> # 2021-04-01
+> homepage.cache.value = 'a'
+>
+> # 2021-04-02 (next day)
+> homepage.cache.value = 'b'
+>
+> # 2021-04-03 (next day)
+> homepage.cache.value = 'c'
+>
+> homepage.cache[Date.new(2021, 4, 1)] # => 'a'
+> homepage.cache[Date.new(2021, 4, 1), 3] # => ['a', 'b', 'c']
+> homepage.cache[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => ['a', 'b']
+>
+> homepage.cache.delete_at(Date.new(2021, 4, 1))
+> homepage.cache.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [nil, 'b', 'c']
+> homepage.cache.at(Date.new(2021, 4, 2)) # => #<Redis::Value key="homepage:1:cache:2021-04-02">
+> homepage.cache.at(Date.new(2021, 4, 2)).value # 'b'
+> ```
 
 ## v0.6.0 (Feb 12, 2023)
 
