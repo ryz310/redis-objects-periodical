@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     redis-objects-periodical (0.6.0)
-      redis-objects
+      redis-objects (~> 1.0)
 
 GEM
   remote: https://rubygems.org/
