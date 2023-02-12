@@ -32,6 +32,7 @@ class Homepage
   daily_counter :pv, expireat: -> { Time.now + 2_678_400 } # about a month
   daily_hash_key :browsing_history, expireat: -> { Time.now + 2_678_400 } # about a month
   daily_set :dau, expireat: -> { Time.now + 2_678_400 } # about a month
+  daily_value :cache, expireat: -> { Time.now + 2_678_400 } # about a month
 
   def id
     1
@@ -97,6 +98,46 @@ homepage.pv.at(Date.new(2021, 4, 2)).value # 2
 - `hourly_counter`
   - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
 - `minutely_counter`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
+
+### Periodical Values
+
+The periodical values automatically switches the save destination when the date changes.
+
+```rb
+# 2021-04-01
+homepage.cache.value = 'a'
+
+# 2021-04-02 (next day)
+homepage.cache.value = 'b'
+
+# 2021-04-03 (next day)
+homepage.cache.value = 'c'
+
+homepage.cache[Date.new(2021, 4, 1)] # => 'a'
+homepage.cache[Date.new(2021, 4, 1), 3] # => ['a', 'b', 'c']
+homepage.cache[Date.new(2021, 4, 1)..Date.new(2021, 4, 2)] # => ['a', 'b']
+
+homepage.cache.delete_at(Date.new(2021, 4, 1))
+homepage.cache.range(Date.new(2021, 4, 1), Date.new(2021, 4, 3)) # => [nil, 'b', 'c']
+homepage.cache.at(Date.new(2021, 4, 2)) # => #<Redis::Value key="homepage:1:cache:2021-04-02">
+homepage.cache.at(Date.new(2021, 4, 2)).value # 'b'
+```
+
+#### Periodical Values Family
+
+- `annual_value`
+  - Key format: `model_name:id:field_name:yyyy`
+  - Redis is a highly volatile key-value store, so I don't recommend using it.
+- `monthly_value`
+  - Key format: `model_name:id:field_name:yyyy-mm`
+- `weekly_value`
+  - Key format: `model_name:id:field_name:yyyyWw`
+- `daily_value`
+  - Key format: `model_name:id:field_name:yyyy-mm-dd`
+- `hourly_value`
+  - Key format: `model_name:id:field_name:yyyy-mm-ddThh`
+- `minutely_value`
   - Key format: `model_name:id:field_name:yyyy-mm-ddThh:mi`
 
 ### Periodical Hashes
