@@ -1,5 +1,17 @@
 # Change log
 
+## v0.7.0 (Feb 12, 2023)
+
+### Feature
+### Bugfix
+### Security
+### Breaking Change
+### Rubocop Challenge
+### Dependabot
+### Misc
+
+* [#128](https://github.com/ryz310/redis-object-daily-counter/pull/128) Periodical::Value ([@ryz310](https://github.com/ryz310))
+
 ## v0.6.0 (Feb 12, 2023)
 
 ### Feature
