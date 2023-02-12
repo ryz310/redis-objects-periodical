@@ -9,6 +9,7 @@ class Redis
     autoload :"#{periodical.capitalize}Counter", 'redis/periodical_counter'
     autoload :"#{periodical.capitalize}HashKey", 'redis/periodical_hash_key'
     autoload :"#{periodical.capitalize}Set", 'redis/periodical_set'
+    autoload :"#{periodical.capitalize}Value", 'redis/periodical_value'
   end
 
   module Objects
@@ -16,6 +17,7 @@ class Redis
       autoload :"#{periodical.capitalize}Counters", 'redis/objects/periodical_counters'
       autoload :"#{periodical.capitalize}Hashes", 'redis/objects/periodical_hashes'
       autoload :"#{periodical.capitalize}Sets", 'redis/objects/periodical_sets'
+      autoload :"#{periodical.capitalize}Values", 'redis/objects/periodical_values'
     end
 
     class << self
@@ -29,6 +31,7 @@ class Redis
           klass.send :include, const_get("Redis::Objects::#{periodical.capitalize}Counters")
           klass.send :include, const_get("Redis::Objects::#{periodical.capitalize}Hashes")
           klass.send :include, const_get("Redis::Objects::#{periodical.capitalize}Sets")
+          klass.send :include, const_get("Redis::Objects::#{periodical.capitalize}Values")
         end
       end
     end
