@@ -28,7 +28,7 @@ GEM
       pry (>= 0.13, < 0.15)
     racc (1.7.1)
     rainbow (3.1.1)
-    rake (13.0.6)
+    rake (13.1.0)
     redis (5.0.6)
       redis-client (>= 0.9.0)
     redis-client (0.12.1)
@@ -96,7 +96,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (>= 2.0)
   pry-byebug
-  rake (~> 13.0)
+  rake (~> 13.1)
   redis-objects-periodical!
   rspec (~> 3.12)
   rspec_junit_formatter
