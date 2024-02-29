@@ -85,7 +85,7 @@ GEM
     simplecov_json_formatter (0.1.4)
     timecop (0.9.8)
     unicode-display_width (2.5.0)
-    yard (0.9.34)
+    yard (0.9.35)
 
 PLATFORMS
   aarch64-linux
