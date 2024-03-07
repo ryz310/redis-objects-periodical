@@ -16,7 +16,7 @@ class Redis
         case length <=> 0
         when 1  then range(date_or_time, next_key(date_or_time, length - 1))
         when 0  then empty_value
-        when -1 then nil  # Ruby does this (a bit weird)
+        when -1 then nil # Ruby does this (a bit weird)
         end
       else
         get_value_from_redis(redis_periodical_field_key(date_or_time))
