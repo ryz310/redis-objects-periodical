@@ -13,18 +13,6 @@ Layout/ExtraSpacing:
   Exclude:
     - 'lib/redis/recurring_at_intervals.rb'
 
-# Offense count: 8
-# This cop supports safe autocorrection (--autocorrect).
-Performance/StringIdentifierArgument:
-  Exclude:
-    - 'lib/redis/objects/periodical_counters.rb'
-    - 'lib/redis/objects/periodical_hashes.rb'
-    - 'lib/redis/objects/periodical_sets.rb'
-    - 'lib/redis/objects/periodical_values.rb'
-    - 'lib/redis/periodical_counter.rb'
-    - 'lib/redis/periodical_hash_key.rb'
-    - 'lib/redis/periodical_set.rb'
-    - 'lib/redis/periodical_value.rb'
 
 # Offense count: 13
 # Configuration parameters: AllowedConstants.
