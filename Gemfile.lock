@@ -26,7 +26,7 @@ GEM
     pry-byebug (3.10.1)
       byebug (~> 11.0)
       pry (>= 0.13, < 0.15)
-    racc (1.7.3)
+    racc (1.8.0)
     rainbow (3.1.1)
     rake (13.2.1)
     redis (5.0.6)
@@ -35,8 +35,9 @@ GEM
       connection_pool
     redis-objects (1.7.0)
       redis
-    regexp_parser (2.9.0)
-    rexml (3.2.6)
+    regexp_parser (2.9.2)
+    rexml (3.2.8)
+      strscan (>= 3.0.9)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -52,7 +53,7 @@ GEM
     rspec-support (3.13.0)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (1.63.5)
+    rubocop (1.64.0)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -86,6 +87,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    strscan (3.1.0)
     timecop (0.9.8)
     unicode-display_width (2.5.0)
     yard (0.9.36)
@@ -103,7 +105,7 @@ DEPENDENCIES
   redis-objects-periodical!
   rspec (~> 3.13)
   rspec_junit_formatter
-  rubocop (~> 1.63)
+  rubocop (~> 1.64)
   rubocop-performance
   rubocop-rspec
   simplecov (= 0.22.0)
