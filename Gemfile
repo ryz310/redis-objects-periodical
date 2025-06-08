@@ -7,7 +7,7 @@ gemspec
 
 gem 'bundler', '>= 2.0'
 gem 'pry-byebug'
-gem 'rake', '~> 13.2'
+gem 'rake', '~> 13.3'
 gem 'rspec', '~> 3.13'
 gem 'rspec_junit_formatter'
 gem 'rubocop', '~> 1.75'
