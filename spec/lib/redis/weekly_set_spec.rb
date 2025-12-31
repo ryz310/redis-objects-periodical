@@ -67,6 +67,19 @@ RSpec.describe Redis::WeeklySet do
       expect(homepage.redis.scard('homepage:1:weekly_active_users:2021W14')).to eq 4
       expect(homepage.redis.scard('homepage:1:weekly_active_users:2021W15')).to eq 2
     end
+
+    context 'when the new year arrives' do
+      before do
+        Timecop.travel(Time.local(2021, 12, 31))
+        homepage.weekly_active_users.merge('user1')
+        Timecop.travel(Time.local(2022, 1, 1))
+        homepage.weekly_active_users.merge('user1', 'user2')
+      end
+
+      it 'appends set with the same week' do
+        expect(homepage.redis.scard('homepage:1:weekly_active_users:2021W52')).to eq 2
+      end
+    end
   end
 
   describe '#members' do
