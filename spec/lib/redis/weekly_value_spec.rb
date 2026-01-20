@@ -67,6 +67,19 @@ RSpec.describe Redis::WeeklyValue do
       expect(homepage.redis.get('homepage:1:cache:2021W14')).to eq 'b'
       expect(homepage.redis.get('homepage:1:cache:2021W15')).to eq 'c'
     end
+
+    context 'when the new year arrives' do
+      before do
+        Timecop.travel(Time.local(2021, 12, 31))
+        homepage.cache.value = 'a'
+        Timecop.travel(Time.local(2022, 1, 1))
+        homepage.cache.value = 'b'
+      end
+
+      it 'appends value with the same week' do
+        expect(homepage.redis.get('homepage:1:cache:2021W52')).to eq 'b'
+      end
+    end
   end
 
   describe '#value' do
