@@ -56,7 +56,7 @@
   `Time.current` and plain Ruby `Time.now` behavior without adding a Rails runtime
   dependency for convenience.
 - A support-policy change must align the gemspec, Dockerfile, Gemfile/lockfile,
-  RuboCop target, CircleCI matrix/coverage aggregation, README, and this guide.
+  RuboCop target, CircleCI matrix/coverage reporting, README, and this guide.
   Keep the Dockerfile's Bundler version compatible with Ruby and aligned with
   the lockfile's `BUNDLED WITH` version.
   Validate specs, lint, and gem build even if no `.rb` file changes.
