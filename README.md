@@ -242,10 +242,22 @@ This gem follows Ruby process' time zone, but if you extends Time class by Activ
 
 ## Development
 
-Code Climate coverage reporting is temporarily disabled because the test reporter
-download is unavailable. SimpleCov still measures coverage during specs, and each
-CircleCI build stores the `coverage/` directory in the job's **Artifacts** tab.
-Reports are available per Ruby version rather than aggregated across the matrix.
+SimpleCov generates HTML and JSON coverage reports during specs. Each CircleCI
+Ruby build stores its `coverage/` directory in the job's **Artifacts** tab. After
+all four Ruby builds succeed, the separate `upload_coverage` job merges their
+results and saves `coverage/coverage.json` under **Artifacts > merged-coverage**.
+
+To enable coverage reporting to Qlty, enable this repository in Qlty Cloud and
+register a dedicated project coverage token as `QLTY_COVERAGE_TOKEN` in this
+project's CircleCI environment variables. Keep secret variables unavailable to
+fork pull requests. When the token is absent, CI still merges and stores coverage
+but explicitly skips the upload. When present, the pinned Qlty CircleCI Orb
+publishes the merged report; upload errors fail that job without being ignored.
+The token's value must not be committed to the repository or printed in logs.
+
+Qlty maintainability analysis and quality gates are configured separately in
+Qlty Cloud. Review their results before making new checks required. Coverage
+upload alone does not enable or verify those checks.
 
 The development environment for this gem is configured with docker-compose.
 Please use the following command:
