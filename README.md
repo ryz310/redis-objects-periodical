@@ -1,4 +1,6 @@
 [![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical)
+[![Maintainability](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/maintainability.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
+[![Code Coverage](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/coverage.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
 
 # Redis::Objects::Periodical
 
