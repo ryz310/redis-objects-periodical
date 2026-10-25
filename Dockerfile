@@ -4,4 +4,5 @@ RUN mkdir /my_app
 WORKDIR /my_app
 COPY . /my_app
 
-RUN gem install bundler && bundle
+# Match Gemfile.lock and retain compatibility with the Ruby 2.7 baseline.
+RUN gem install bundler -v 2.3.26 --no-document && bundle _2.3.26_ install

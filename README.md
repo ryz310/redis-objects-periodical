@@ -244,6 +244,45 @@ This gem follows Ruby process' time zone, but if you extends Time class by Activ
 
 ## Development
 
+Use Docker with the Compose plugin (`docker compose`). The development image uses
+Ruby 2.7 and Bundler 2.3.26, matching the current minimum Ruby version and lockfile.
+Agent workflow, compatibility constraints, and validation rules are documented in
+[AGENTS.md](AGENTS.md).
+
+The specs connect to the Compose service at `redis:6379` and run `flushdb` after
+every example. Use a disposable Redis instance dedicated to this checkout. The
+current Compose file publishes host port 6379, which must be available; do not
+redirect tests to an existing Redis containing data you want to keep.
+
+Build the development image, start Redis, and install the locked dependencies:
+
+```sh
+docker compose build ruby
+docker compose up -d redis
+docker compose exec redis redis-cli ping
+docker compose run --rm ruby bundle install
+```
+
+Wait for `redis-cli ping` to return `PONG` before running specs.
+
+```sh
+# Run the full suite, or replace the path with an affected spec.
+docker compose run --rm ruby bundle exec rspec
+docker compose run --rm ruby bundle exec rspec spec/lib/redis/daily_counter_spec.rb
+
+# Check style without automatically modifying source files.
+docker compose run --rm ruby bundle exec rubocop
+
+# Build the gem or generate API documentation when relevant.
+docker compose run --rm ruby bundle exec rake build
+docker compose run --rm ruby bundle exec yardoc
+```
+
+Rebuild the image and run `bundle install` again after dependency changes. Stop
+the development services with `docker compose down`; routine cleanup does not
+require deleting the bundle volume. For parallel checkouts, use distinct Compose
+project names and resolve the fixed host-port conflict before starting Redis.
+
 SimpleCov generates HTML and JSON coverage reports during specs. Each CircleCI
 Ruby build stores its `coverage/` directory in the job's **Artifacts** tab. After
 all four Ruby builds succeed, the separate `upload_coverage` job merges their
@@ -260,14 +299,6 @@ The token's value must not be committed to the repository or printed in logs.
 Qlty maintainability analysis and quality gates are configured separately in
 Qlty Cloud. Review their results before making new checks required. Coverage
 upload alone does not enable or verify those checks.
-
-The development environment for this gem is configured with docker-compose.
-Please use the following command:
-
-    $ docker-compose up -d
-    $ docker-compose run --rm ruby bundle
-    $ docker-compose run --rm ruby rspec .
-    $ docker-compose run --rm ruby rubocop -a
 
 ## Contributing
 
