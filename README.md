@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical) [![Maintainability](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-periodical/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-periodical/test_coverage)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical)
 
 # Redis::Objects::Periodical
 
@@ -241,6 +241,11 @@ homepage.dau.at(Date.new(2021, 4, 2)).members # ['user2', 'user3']
 This gem follows Ruby process' time zone, but if you extends Time class by ActiveSupport (e.g. `Time.current`), follows Rails process' timezone.
 
 ## Development
+
+Code Climate coverage reporting is temporarily disabled because the test reporter
+download is unavailable. SimpleCov still measures coverage during specs, and each
+CircleCI build stores the `coverage/` directory in the job's **Artifacts** tab.
+Reports are available per Ruby version rather than aggregated across the matrix.
 
 The development environment for this gem is configured with docker-compose.
 Please use the following command:
