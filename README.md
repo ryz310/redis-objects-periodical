@@ -1,4 +1,6 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical) [![Maintainability](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/maintainability)](https://codeclimate.com/github/ryz310/redis-objects-periodical/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/deebb6c406c306a6f337/test_coverage)](https://codeclimate.com/github/ryz310/redis-objects-periodical/test_coverage)
+[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical)
+[![Maintainability](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/maintainability.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
+[![Code Coverage](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/coverage.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
 
 # Redis::Objects::Periodical
 
@@ -280,6 +282,23 @@ Rebuild the image and run `bundle install` again after dependency changes. Stop
 the development services with `docker compose down`; routine cleanup does not
 require deleting the bundle volume. For parallel checkouts, use distinct Compose
 project names and resolve the fixed host-port conflict before starting Redis.
+
+SimpleCov generates HTML and JSON coverage reports during specs. Each CircleCI
+Ruby build stores its `coverage/` directory in the job's **Artifacts** tab. After
+all four Ruby builds succeed, the separate `upload_coverage` job merges their
+results and saves `coverage/coverage.json` under **Artifacts > merged-coverage**.
+
+To enable coverage reporting to Qlty, enable this repository in Qlty Cloud and
+register a dedicated project coverage token as `QLTY_COVERAGE_TOKEN` in this
+project's CircleCI environment variables. Keep secret variables unavailable to
+fork pull requests. When the token is absent, CI still merges and stores coverage
+but explicitly skips the upload. When present, the pinned Qlty CircleCI Orb
+publishes the merged report; upload errors fail that job without being ignored.
+The token's value must not be committed to the repository or printed in logs.
+
+Qlty maintainability analysis and quality gates are configured separately in
+Qlty Cloud. Review their results before making new checks required. Coverage
+upload alone does not enable or verify those checks.
 
 ## Contributing
 
