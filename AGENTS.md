@@ -5,8 +5,19 @@
 - This Ruby gem extends `redis-objects` with counters, values, sets, and hashes
   for six intervals: annual, monthly, weekly, daily, hourly, and minutely.
 - Read [README.md](README.md) for public usage and development commands. Check
-  implementation and specs before changing behavior; report contradictions
-  rather than silently treating them as new requirements.
+  implementation and specs before changing behavior.
+- When a repository's documentation and its existing code disagree, follow the
+  conventions used in the existing code, and in your final reply point out each
+  inconsistency you found between the documentation and the code.
+- Apply this default to descriptions of existing conventions. It does not
+  override explicit user requests, security or compatibility requirements,
+  configured test/lint checks, or an approved migration. If existing behavior
+  appears defective or intent is unclear, surface the decision rather than
+  treating the code as correct by definition.
+- Report inconsistencies encountered during the task with relevant file
+  references; this does not require a repository-wide audit. The precedence
+  sentence comes from [Xu and Wu (2026), section 4](https://arxiv.org/html/2610.30571v1#S4);
+  the scope and exceptions above are this repository's adaptation.
 - Entry point and generated classes: `lib/redis-objects-periodical.rb`,
   `lib/redis/periodical_*.rb`, and `lib/redis/objects/periodical_*.rb`.
 - Shared date/range behavior: `lib/redis/recurring_at_intervals.rb`; key formats
