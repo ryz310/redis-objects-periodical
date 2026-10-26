@@ -29,8 +29,8 @@ jobs:
           persist-credentials: false
       - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
         with:
-          ruby-version: '3.2'
-          bundler: '2.3.26'
+          ruby-version: '3.3'
+          bundler: '4.0.23'
           bundler-cache: false
       - name: Install dependencies and Challenger
         run: |
@@ -58,8 +58,8 @@ jobs:
           persist-credentials: false
       - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
         with:
-          ruby-version: '3.2'
-          bundler: '2.3.26'
+          ruby-version: '3.3'
+          bundler: '4.0.23'
           bundler-cache: false
       - name: Install dependencies and Challenger
         run: |
