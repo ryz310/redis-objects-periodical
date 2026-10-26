@@ -35,6 +35,8 @@ jobs:
           persist-credentials: false
       - name: Install locked dependencies
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
           gem install bundler -v 2.3.26 --no-document
           bundle _2.3.26_ install
       - name: Generate YARD documentation
@@ -67,6 +69,8 @@ jobs:
           persist-credentials: false
       - name: Install locked dependencies
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
           gem install bundler -v 2.3.26 --no-document
           bundle _2.3.26_ install
       - name: Download coverage merge inputs

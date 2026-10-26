@@ -40,6 +40,9 @@ jobs:
 
       - name: Install locked dependencies
         run: |
+          # cimg's Bash HOME differs from the checkout action's temporary HOME.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
           gem install bundler -v 2.3.26 --no-document
           bundle _2.3.26_ install
 
@@ -52,6 +55,16 @@ jobs:
 
       - name: Build gem
         run: bundle exec rake build
+
+      - name: Verify packaged Ruby sources
+        run: |
+          bundle exec ruby -rrubygems/package -e '
+            package = Gem::Package.new(Dir["pkg/*.gem"].fetch(0)).spec
+            sources = Dir["lib/**/*.rb"]
+            missing = sources - package.files
+            abort("Missing packaged sources: #{missing.join(", ")}") unless missing.empty?
+            puts "Verified #{sources.length} Ruby sources in #{package.full_name}"
+          '
 
       - name: Prepare coverage merge input
         if: ${{ always() && hashFiles('coverage/.resultset.json') != '' }}
@@ -103,6 +116,8 @@ jobs:
           persist-credentials: false
       - name: Install locked dependencies
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
           gem install bundler -v 2.3.26 --no-document
           bundle _2.3.26_ install
       - name: Run RuboCop

@@ -290,7 +290,9 @@ dispatch. The reusable `checks.yml` workflow runs the full specs and builds the
 gem on Ruby 2.7, 3.0, 3.1, and 3.2, plus RuboCop on Ruby 2.7. It retains the
 existing CircleCI Ruby images and a disposable, job-local `redis` service without
 publishing host ports. Bundler 2.3.26 installs the locked dependencies without
-dependency caches. `ci.yml` also generates YARD documentation on Ruby 3.2.
+dependency caches. Git trusts only the current workspace inside the container,
+and each build verifies that the gem includes every Ruby source under `lib/`.
+`ci.yml` also generates YARD documentation on Ruby 3.2.
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
