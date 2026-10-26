@@ -372,11 +372,64 @@ in the PR. Compatibility with older ActiveSupport releases remains outside this
 job's verified scope. The optional dependency does not change
 the gemspec's Ruby requirement or add an ActiveSupport runtime dependency.
 
+#### Timezone verification contract
+
 The integration checks all six periods and four object types against real Redis,
 with `Time.zone` set to `Asia/Tokyo` and unset. Timecop freezes UTC at year/month
 and Sunday/Monday boundaries, while the process timezone stays UTC. Weekly keys
 retain the existing Monday-based `%Y`/`%W` format, including the previous year
 when the Monday belongs to December; they are not ISO week-year keys.
+
+The contract is that periodical objects select and persist keys using the real
+ActiveSupport `Time.current`/`Time.zone` behavior, with the process clock as the
+fallback when `Time.zone` is unset. The job's `TZ=UTC` fixes the process timezone;
+the [integration spec](spec/integration/redis/recurring_at_intervals_spec.rb)
+uses `Time.use_zone(zone) { example.run }` to set `Asia/Tokyo` or `nil` for each
+example. These settings exercise separate layers of timezone selection.
+
+Expected key suffixes are fixed fixture values, independent of `Time.current`
+at assertion time. For example, `2020-12-31 23:30 UTC` is
+`2021-01-01 08:30` in Tokyo, so annual keys must end in `2020` and `2021`,
+respectively. Assertions check the object's key and the corresponding persisted
+Redis entry. Comparing the object's time with `Time.current` alone would not
+establish that a particular timezone was applied.
+
+The current inventory is two boundary instants x two zone settings x six periods
+x four object types: **96 examples, with 48 per zone setting**. This covers the
+selected Tokyo/unset cases and year/month/week boundaries; other zones and DST
+transitions remain outside this suite's verified scope.
+
+#### Recorded execution evidence and open gap
+
+On 2026-10-27, the JUnit artifact from the
+[successful CI run for commit 8ab4de1](https://github.com/ryz310/redis-objects-periodical/actions/runs/40409599457)
+confirmed both zone groups actually ran under Ruby 3.3 / ActiveSupport 8.1.4.
+A separate diagnostic changed `Time.use_zone(zone)` to `Time.use_zone(nil)` in
+an isolated temporary copy and ran it against disposable Redis:
+
+| Verification | Tokyo: executed / failed | Unset: executed / failed |
+| --- | --- | --- |
+| Actual CI JUnit report | 48 / 0 | 48 / 0 |
+| Temporary copy with the zone setting disabled | 48 / 36 | 48 / 0 |
+
+Both reports contained zero errors and zero skipped examples. The diagnostic
+failed on incorrect keys, for example expected annual suffix `2021` versus actual
+`2020`. Some periods share a key at one of the two boundary instants, so disabling
+the zone does not make every Tokyo example fail. This experiment confirms that
+the assertions detect ineffective timezone selection; it is a recorded one-off
+diagnostic, not an additional CI step.
+
+**Open verification gap:** the [workflow](.github/workflows/ci.yml) runs the
+explicit spec file and overrides the default exclusion, but it does not validate
+the per-zone execution inventory in the JUnit report. The evidence above confirms
+this particular run included both groups. A future filter or removal could leave
+only the unset group running and passing without an explicit missing-group error.
+
+Follow-up work is to fail CI when either intended zone group is absent or empty,
+or intended examples are skipped, using explicit group execution and/or JUnit
+validation. Keep that
+inventory check aligned with deliberate changes to the fixtures. This guard is
+not implemented by the current workflow.
 
 Run it separately with the same disposable Compose Redis as the regular suite:
 
