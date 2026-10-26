@@ -1,0 +1,5 @@
+# frozen_string_literal: true
+
+# Keep ActiveSupport optional and exercise a line compatible with Ruby 2.7.
+eval_gemfile '../Gemfile'
+gem 'activesupport', '~> 7.0.8'

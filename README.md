@@ -292,7 +292,9 @@ existing CircleCI Ruby images and a disposable, job-local `redis` service withou
 publishing host ports. Bundler 2.3.26 installs the locked dependencies without
 dependency caches. Git trusts only the current workspace inside the container,
 and each build verifies that the gem includes every Ruby source under `lib/`.
-`ci.yml` also generates YARD documentation on Ruby 3.2.
+`ci.yml` also generates YARD documentation on Ruby 3.2, tests the Dependabot
+policy without API writes (`dependabot-policy`), and runs an isolated optional
+ActiveSupport integration job on Ruby 2.7 (`active-support-timezone`).
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
@@ -316,6 +318,93 @@ upload alone does not enable or verify those checks.
 Third-party and GitHub-owned Actions are pinned to full commit SHAs, with version
 comments. Dependabot checks for Actions updates weekly. Routine CI uses read-only
 repository permissions and does not persist checkout credentials.
+
+### Optional ActiveSupport integration
+
+The regular suite excludes `spec/integration/**/*_spec.rb` so its plain Ruby
+checks do not load ActiveSupport. A separate process uses
+`gemfiles/active_support.gemfile` and its lockfile to test ActiveSupport 7.0,
+which is compatible with the Ruby 2.7 baseline. This is an optional test dependency,
+not a new runtime dependency or a promise to support every Rails version.
+
+The integration checks all six periods and four object types against real Redis,
+with `Time.zone` set to `Asia/Tokyo` and unset. Timecop freezes UTC at year/month
+and Sunday/Monday boundaries, while the process timezone stays UTC. Weekly keys
+retain the existing Monday-based `%Y`/`%W` format, including the previous year
+when the Monday belongs to December; they are not ISO week-year keys.
+
+Run it separately with the same disposable Compose Redis as the regular suite:
+
+```sh
+docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle install
+docker compose run --rm -e TZ=UTC -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern ''
+```
+
+The empty `--exclude-pattern` overrides `.rspec` for this explicit integration
+run. The normal four-Ruby coverage merge remains unchanged; the separate job
+stores its own JUnit and coverage artifacts.
+
+### Dependency updates and auto-merge
+
+Dependabot checks Bundler and GitHub Actions weekly on Monday at 08:00 JST.
+Bundler version updates wait 3 days for patches, 7 for minor updates, and 14 for
+major updates (7 days by default). Actions updates use a 7-day default cooldown;
+SemVer-specific cooldown settings are not applied to that ecosystem. These
+cooldowns apply to version updates, not security updates.
+
+`dependabot-auto-merge.yml` can reserve auto-merge for a narrow set of updates:
+
+- Bundler patch/minor updates of `pry-byebug`, `rake`, `rspec`,
+  `rspec_junit_formatter`, `rubocop`, `rubocop-performance`, `rubocop-rspec`,
+  `simplecov`, `timecop`, and `yard`, changing only `Gemfile.lock`. The locked
+  runtime dependency entries (`redis-objects-periodical`, `redis-objects`,
+  `redis`, `redis-client`, and `connection_pool`) must stay identical. Only gem
+  spec/version and transitive dependency requirement lines may change.
+- SHA-pinned patch/minor replacements for `actions/checkout`,
+  `actions/upload-artifact`, `actions/download-artifact`, and
+  `actions/github-script`, changing only `uses:` lines and their version comments
+  in existing workflow files.
+
+Every named dependency in a grouped update must be permitted. Major updates,
+Bundler itself, runtime dependencies, optional integration lockfiles, manifest
+constraints, source/platform changes, third-party Actions, and workflow
+permission/trigger/step changes require manual review. Unknown metadata, missing
+or incomplete patches, a changed PR head, forks, and API errors do not enable
+merging. The merge command also matches the exact inspected head commit.
+
+The privileged workflow uses `pull_request_target` only to obtain the write
+permissions unavailable on normal Dependabot PR events. It checks out only the
+trusted base commit's `.github/scripts` policy with credentials disabled, never
+executes PR code, and inspects changes through the GitHub API. Its trigger has a
+scoped zizmor exception for this metadata-only design. Policy regressions run in
+ordinary read-only CI:
+
+```sh
+node --test .github/scripts/dependabot-policy.test.cjs
+```
+
+Repository administrators must finish these settings after the new checks have
+appeared on a PR:
+
+1. Enable repository auto-merge with merge commits and preserve existing required
+   reviews, security checks, and other protections.
+2. On `master`, require status checks and require the branch to be up to date.
+   Keep all four `checks / build_on_ruby_*` checks, `checks / rubocop`, `yardoc`,
+   and `upload-coverage`; add `active-support-timezone` and `dependabot-policy`.
+3. Set repository variable `GHA_DEPENDABOT_AUTOMERGE_ENABLED=true` only after
+   confirming those settings. Until then, the auto-merge job skips all writes.
+4. Verify on an eligible Dependabot PR that a failing required check prevents
+   merging and that an excluded update stays manual. Re-run the metadata workflow
+   for existing PRs after setup, or let their next update trigger it.
+
+The policy verifies the repository's auto-merge setting and the effective
+rulesets plus any classic branch protection, including all nine named checks and
+strict up-to-date checks, before reserving a merge. Preserve GitGuardian and all
+other existing required checks. If protection cannot be read or is missing, it
+leaves the PR for manual review. Merge queues are not supported by this workflow. No branch-protection, repository-variable, or
+publication setting is changed by the workflow. Disable the enable variable to
+stop new reservations; disable auto-merge on already-reserved PRs separately if
+rolling back.
 
 ### Release and scheduled maintenance
 
