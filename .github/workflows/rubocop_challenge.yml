@@ -37,6 +37,9 @@ jobs:
           bundle install
           gem install rubocop_challenger --no-document
       - name: Run without remote writes
+        # PrComet checks for a token even when --no-create-pr skips remote writes.
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ github.token }}
         run: rubocop_challenger go --email=ryz310@gmail.com --name=ryz310 --no-create-pr
 
   challenge:
@@ -49,10 +52,10 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      # This job intentionally pushes a branch; the read-only dry run is separate.
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          persist-credentials: true # zizmor: ignore[artipacked]
+          # PrComet authenticates its push using GITHUB_ACCESS_TOKEN below.
+          persist-credentials: false
       - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
         with:
           ruby-version: '3.2'

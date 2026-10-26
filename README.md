@@ -338,8 +338,9 @@ use `RUBYGEMS_API_KEY`. See the [RubyGems Trusted Publishing guide](https://guid
 `rubocop_challenge.yml` preserves the daily 08:30 JST schedule. Remote writes
 remain disabled unless the repository variable `GHA_CHALLENGE_ENABLED` is exactly
 `true`. Manual dispatch on `master` defaults to a read-only dry run using
-`--no-create-pr`, which needs neither that variable nor a PR token. Actual PR
-creation uses `GITHUB_TOKEN` with job-scoped `contents: write` and
+`--no-create-pr`. The CLI requires a token even for a dry run, so that job uses
+the automatic read-only `GITHUB_TOKEN` and does not need the enable variable.
+Actual PR creation uses `GITHUB_TOKEN` with job-scoped `contents: write` and
 `pull-requests: write`. Enable **Allow GitHub Actions to create and approve pull
 requests** in the repository's Actions settings before enabling it. Check the
 created PR's CI and approve pending workflow runs if required; PR creation alone
