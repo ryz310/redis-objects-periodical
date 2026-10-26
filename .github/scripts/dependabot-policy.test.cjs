@@ -1,6 +1,8 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 const { assessUpdate, protectionReady, evaluate, requiredChecks } = require('./dependabot-policy.cjs');
 
 const metadata = {
@@ -26,7 +28,7 @@ GEM
       rspec-core (~> 3.13.0)
 
 BUNDLED WITH
-   2.3.26
+  4.0.23
 `;
 const headLock = baseLock.replace('rspec (3.13.1)', 'rspec (3.13.2)');
 const file = (filename, removed, added) => ({
@@ -74,7 +76,7 @@ for (const name of ['connection_pool', 'redis', 'redis-client', 'redis-objects',
 }
 for (const [removed, added] of [
   ['  remote: https://rubygems.org/', '  remote: https://example.com/'],
-  ['   2.3.26', '   3.0.0'],
+  ['  4.0.23', '  4.1.0'],
   ['  rspec (~> 3.13)', '  rspec (~> 4.0)'],
   ['  x86_64-linux', '  other-platform'],
 ]) {
@@ -201,4 +203,13 @@ test('checks effective branch rules before approving an update', async () => {
   input.github.graphql = async () => ({ repository: rulesRepository });
   input.github.paginate = async endpoint => endpoint === 'files' ? [lockFile] : rules;
   assert.equal(await evaluate(input), true);
+});
+
+test('required Ruby checks match the reusable CI matrix', () => {
+  const workflow = readFileSync(join(__dirname, '../workflows/checks.yml'), 'utf8');
+  const matrix = workflow.match(/ruby:\s*\[([^\]]+)\]/);
+  assert.ok(matrix, 'Expected an explicit Ruby matrix in checks.yml');
+  const versions = matrix[1].split(',').map(value => value.trim().replace(/['"]/g, ''));
+  assert.deepEqual(requiredChecks.filter(name => name.startsWith('checks / build_on_ruby_')),
+    versions.map(version => `checks / build_on_ruby_${version}`));
 });

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-# Keep ActiveSupport optional and exercise a line compatible with Ruby 2.7.
+# Keep ActiveSupport optional; run this integration on the Ruby 3.3 baseline.
 eval_gemfile '../Gemfile'
 gem 'activesupport', '~> 7.0.8'

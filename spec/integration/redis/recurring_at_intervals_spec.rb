@@ -13,10 +13,8 @@ RSpec.describe Redis::RecurringAtIntervals do
     Class.new do
       include Redis::Objects
 
-      periods.each do |period|
-        types.each do |type|
-          public_send("#{period}_#{type}", "#{period}_#{type}")
-        end
+      Redis::PERIODICALS.product(%i[counter value set hash_key]).each do |period, type|
+        public_send("#{period}_#{type}", "#{period}_#{type}")
       end
 
       def id

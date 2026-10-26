@@ -9,8 +9,7 @@ const officialActions = new Set([
   'actions/github-script',
 ]);
 const requiredChecks = [
-  'checks / build_on_ruby_2.7', 'checks / build_on_ruby_3.0',
-  'checks / build_on_ruby_3.1', 'checks / build_on_ruby_3.2',
+  'checks / build_on_ruby_3.3', 'checks / build_on_ruby_3.4', 'checks / build_on_ruby_4.0',
   'checks / rubocop', 'yardoc', 'upload-coverage', 'active-support-timezone', 'dependabot-policy',
 ];
 
