@@ -3,9 +3,15 @@ updates:
 - package-ecosystem: bundler
   directory: "/"
   schedule:
-    interval: daily
+    interval: weekly
+    day: monday
     time: "08:00"
-    timezone: Japan
+    timezone: Asia/Tokyo
+  cooldown:
+    default-days: 7
+    semver-major-days: 14
+    semver-minor-days: 7
+    semver-patch-days: 3
   open-pull-requests-limit: 10
   reviewers:
   - ryz310
@@ -24,6 +30,8 @@ updates:
     day: monday
     time: "08:00"
     timezone: Asia/Tokyo
+  cooldown:
+    default-days: 7
   open-pull-requests-limit: 10
   reviewers:
   - ryz310

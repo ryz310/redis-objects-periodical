@@ -302,7 +302,9 @@ CircleCI Ruby images and a disposable, job-local `redis` service without
 publishing host ports. Bundler 4.0.23 installs the locked dependencies without
 dependency caches. Git trusts only the current workspace inside the container,
 and each build verifies that the gem includes every Ruby source under `lib/`.
-`ci.yml` also generates YARD documentation on Ruby 3.3.
+`ci.yml` also generates YARD documentation on Ruby 3.3, tests the Dependabot
+policy without API writes (`dependabot-policy`), and runs an isolated optional
+ActiveSupport integration job on Ruby 3.3 (`active-support-timezone`).
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
@@ -326,6 +328,181 @@ upload alone does not enable or verify those checks.
 Third-party and GitHub-owned Actions are pinned to full commit SHAs, with version
 comments. Dependabot checks for Actions updates weekly. Routine CI uses read-only
 repository permissions and does not persist checkout credentials.
+
+### Optional ActiveSupport integration
+
+The regular suite excludes `spec/integration/**/*_spec.rb` so its plain Ruby
+checks do not load ActiveSupport. The separate `active-support-timezone` job runs
+on the minimum supported Ruby (currently 3.3), using
+`gemfiles/active_support.gemfile` and its own lockfile. ActiveSupport is an
+optional integration-test dependency; the gem remains usable without Rails or
+ActiveSupport. This job verifies the selected Ruby/ActiveSupport pair; other
+Rails releases and Ruby/ActiveSupport combinations are outside its verified scope.
+
+#### ActiveSupport version selection
+
+Select the newest stable ActiveSupport minor series that accepts the gem's
+minimum Ruby version and is still covered by upstream security maintenance at
+the time of review. Revisit the selection as Ruby requirements and upstream
+maintenance change. Check both the
+[RubyGems Ruby requirement](https://rubygems.org/gems/activesupport) and the
+[Rails maintenance policy](https://rubyonrails.org/maintenance) when selecting
+or reviewing the series.
+
+As reviewed on 2026-10-27, the selected series is **ActiveSupport 8.1** with
+`gem 'activesupport', '~> 8.1.4'`. Version
+[8.1.4 requires Ruby >= 3.2.0](https://rubygems.org/gems/activesupport/versions/8.1.4),
+so it can be tested on the Ruby 3.3 baseline. The upstream policy currently lists
+security maintenance for 8.1 through 2027-10-10. Regular bug-fix maintenance
+follows a separate support window.
+
+The constraint allows `>= 8.1.4, < 8.2`, including later patches/security releases
+in 8.1. The separate lockfile pins the exact tested release (currently 8.1.4),
+and CI installs that lockfile with `BUNDLE_FROZEN=true`; CI does not resolve a new
+version on every run. Raising the patch floor or selecting another minor/major
+series requires an explicit dependency change and successful validation.
+
+Review this choice when the Ruby minimum changes, a newer compatible stable
+series is released, or the selected series approaches the end of security
+maintenance. Update the constraint and optional lockfile together, retain
+unrelated baseline dependencies where compatible, and run the isolated timezone
+suite, the plain-Ruby suite, RuboCop, and the gem build. Record the reviewed date,
+chosen release, and upstream sources in this section; report verification results
+in the PR. Compatibility with older ActiveSupport releases remains outside this
+job's verified scope. The optional dependency does not change
+the gemspec's Ruby requirement or add an ActiveSupport runtime dependency.
+
+#### Timezone verification contract
+
+The integration checks all six periods and four object types against real Redis,
+with `Time.zone` set to `Asia/Tokyo` and unset. Timecop freezes UTC at year/month
+and Sunday/Monday boundaries, while the process timezone stays UTC. Weekly keys
+retain the existing Monday-based `%Y`/`%W` format, including the previous year
+when the Monday belongs to December; they are not ISO week-year keys.
+
+The contract is that periodical objects select and persist keys using the real
+ActiveSupport `Time.current`/`Time.zone` behavior, with the process clock as the
+fallback when `Time.zone` is unset. The job's `TZ=UTC` fixes the process timezone;
+the [integration spec](spec/integration/redis/recurring_at_intervals_spec.rb)
+uses `Time.use_zone(zone) { example.run }` to set `Asia/Tokyo` or `nil` for each
+example. These settings exercise separate layers of timezone selection.
+
+Expected key suffixes are fixed fixture values, independent of `Time.current`
+at assertion time. For example, `2020-12-31 23:30 UTC` is
+`2021-01-01 08:30` in Tokyo, so annual keys must end in `2020` and `2021`,
+respectively. Assertions check the object's key and the corresponding persisted
+Redis entry. Comparing the object's time with `Time.current` alone would not
+establish that a particular timezone was applied.
+
+The current inventory is two boundary instants x two zone settings x six periods
+x four object types: **96 examples, with 48 per zone setting**. This covers the
+selected Tokyo/unset cases and year/month/week boundaries; other zones and DST
+transitions remain outside this suite's verified scope.
+
+#### Recorded execution evidence and open gap
+
+On 2026-10-27, the JUnit artifact from the
+[successful CI run for commit 8ab4de1](https://github.com/ryz310/redis-objects-periodical/actions/runs/40409599457)
+confirmed both zone groups actually ran under Ruby 3.3 / ActiveSupport 8.1.4.
+A separate diagnostic changed `Time.use_zone(zone)` to `Time.use_zone(nil)` in
+an isolated temporary copy and ran it against disposable Redis:
+
+| Verification | Tokyo: executed / failed | Unset: executed / failed |
+| --- | --- | --- |
+| Actual CI JUnit report | 48 / 0 | 48 / 0 |
+| Temporary copy with the zone setting disabled | 48 / 36 | 48 / 0 |
+
+Both reports contained zero errors and zero skipped examples. The diagnostic
+failed on incorrect keys, for example expected annual suffix `2021` versus actual
+`2020`. Some periods share a key at one of the two boundary instants, so disabling
+the zone does not make every Tokyo example fail. This experiment confirms that
+the assertions detect ineffective timezone selection; it is a recorded one-off
+diagnostic, not an additional CI step.
+
+**Open verification gap:** the [workflow](.github/workflows/ci.yml) runs the
+explicit spec file and overrides the default exclusion, but it does not validate
+the per-zone execution inventory in the JUnit report. The evidence above confirms
+this particular run included both groups. A future filter or removal could leave
+only the unset group running and passing without an explicit missing-group error.
+
+Follow-up work is to fail CI when either intended zone group is absent or empty,
+or intended examples are skipped, using explicit group execution and/or JUnit
+validation. Keep that
+inventory check aligned with deliberate changes to the fixtures. This guard is
+not implemented by the current workflow.
+
+Run it separately with the same disposable Compose Redis as the regular suite:
+
+```sh
+docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle install
+docker compose run --rm -e TZ=UTC -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern ''
+```
+
+The empty `--exclude-pattern` overrides `.rspec` for this explicit integration
+run. The normal three-Ruby coverage merge remains unchanged; the separate job
+stores its own JUnit and coverage artifacts.
+
+### Dependency updates and auto-merge
+
+Dependabot checks Bundler and GitHub Actions weekly on Monday at 08:00 JST.
+Bundler version updates wait 3 days for patches, 7 for minor updates, and 14 for
+major updates (7 days by default). Actions updates use a 7-day default cooldown;
+SemVer-specific cooldown settings are not applied to that ecosystem. These
+cooldowns apply to version updates, not security updates.
+
+`dependabot-auto-merge.yml` can reserve auto-merge for a narrow set of updates:
+
+- Bundler patch/minor updates of `pry-byebug`, `rake`, `rspec`,
+  `rspec_junit_formatter`, `rubocop`, `rubocop-performance`, `rubocop-rspec`,
+  `simplecov`, `timecop`, and `yard`, changing only `Gemfile.lock`. The locked
+  runtime dependency entries (`redis-objects-periodical`, `redis-objects`,
+  `redis`, `redis-client`, and `connection_pool`) must stay identical. Only gem
+  spec/version and transitive dependency requirement lines may change.
+- SHA-pinned patch/minor replacements for `actions/checkout`,
+  `actions/upload-artifact`, `actions/download-artifact`, and
+  `actions/github-script`, changing only `uses:` lines and their version comments
+  in existing workflow files.
+
+Every named dependency in a grouped update must be permitted. Major updates,
+Bundler itself, runtime dependencies, optional integration lockfiles, manifest
+constraints, source/platform changes, third-party Actions, and workflow
+permission/trigger/step changes require manual review. Unknown metadata, missing
+or incomplete patches, a changed PR head, forks, and API errors do not enable
+merging. The merge command also matches the exact inspected head commit.
+
+The privileged workflow uses `pull_request_target` only to obtain the write
+permissions unavailable on normal Dependabot PR events. It checks out only the
+trusted base commit's `.github/scripts` policy with credentials disabled, never
+executes PR code, and inspects changes through the GitHub API. Its trigger has a
+scoped zizmor exception for this metadata-only design. Policy regressions run in
+ordinary read-only CI:
+
+```sh
+node --test .github/scripts/dependabot-policy.test.cjs
+```
+
+Repository administrators must finish these settings after the new checks have
+appeared on a PR:
+
+1. Enable repository auto-merge with merge commits and preserve existing required
+   reviews, security checks, and other protections.
+2. On `master`, require status checks and require the branch to be up to date.
+   Keep all three `checks / build_on_ruby_*` checks, `checks / rubocop`, `yardoc`,
+   and `upload-coverage`; add `active-support-timezone` and `dependabot-policy`.
+3. Set repository variable `GHA_DEPENDABOT_AUTOMERGE_ENABLED=true` only after
+   confirming those settings. Until then, the auto-merge job skips all writes.
+4. Verify on an eligible Dependabot PR that a failing required check prevents
+   merging and that an excluded update stays manual. Re-run the metadata workflow
+   for existing PRs after setup, or let their next update trigger it.
+
+The policy verifies the repository's auto-merge setting and the effective
+rulesets plus any classic branch protection, including all eight named checks and
+strict up-to-date checks, before reserving a merge. Preserve GitGuardian and all
+other existing required checks. If protection cannot be read or is missing, it
+leaves the PR for manual review. Merge queues are not supported by this workflow. No branch-protection, repository-variable, or
+publication setting is changed by the workflow. Disable the enable variable to
+stop new reservations; disable auto-merge on already-reserved PRs separately if
+rolling back.
 
 ### Release and scheduled maintenance
 
