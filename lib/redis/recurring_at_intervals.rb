@@ -2,9 +2,9 @@
 
 class Redis
   module RecurringAtIntervals
-    def initialize(key, *args)
+    def initialize(key, *)
       @original_key = key
-      super(redis_periodical_field_key(current_time), *args)
+      super(redis_periodical_field_key(current_time), *)
     end
 
     attr_reader :original_key

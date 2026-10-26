@@ -48,10 +48,10 @@
 
 ## Runtime and compatibility
 
-- Preserve the repository's declared Ruby minimum of 2.7 (`required_ruby_version`)
+- Preserve the repository's declared Ruby minimum of 3.3 (`required_ruby_version`)
   and `redis-objects ~> 1.0` dependency unless changing support is in scope.
-  The Docker development baseline and RuboCop target are Ruby 2.7; the configured
-  CI build matrix covers Ruby 2.7, 3.0, 3.1, and 3.2. These describe this
+  The Docker development baseline and RuboCop target are Ruby 3.3; the configured
+  CI build matrix covers Ruby 3.3, 3.4, and 4.0. These describe this
   repository's configuration, not upstream maintenance status.
 - This is a standalone gem. Rails/ActiveSupport is optional; preserve both
   `Time.current` and plain Ruby `Time.now` behavior without adding a Rails runtime

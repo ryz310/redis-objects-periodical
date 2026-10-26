@@ -8,6 +8,16 @@ This is a gem which extends [Redis::Objects](https://github.com/nateware/redis-o
 
 ## Installation
 
+Ruby 3.3 or newer is required. Ruby 3.3, 3.4, and 4.0 are tested in CI.
+The support policy follows stable Ruby branches receiving official normal or
+security maintenance; preview releases are not supported. CI uses the latest
+patch releases available in each supported series' CircleCI Ruby image.
+See [Ruby's maintenance status](https://www.ruby-lang.org/en/downloads/branches/).
+
+Ruby 2.7, 3.0, 3.1, and 3.2 are no longer supported. Applications using those
+versions must upgrade Ruby before upgrading this gem, or remain on the last gem
+release whose `required_ruby_version` permits their Ruby version.
+
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -245,7 +255,7 @@ This gem follows Ruby process' time zone, but if you extends Time class by Activ
 ## Development
 
 Use Docker with the Compose plugin (`docker compose`). The development image uses
-Ruby 2.7 and Bundler 2.3.26, matching the current minimum Ruby version and lockfile.
+Ruby 3.3 and Bundler 4.0.23, matching the current minimum Ruby version and lockfile.
 Agent workflow, compatibility constraints, and validation rules are documented in
 [AGENTS.md](AGENTS.md).
 
@@ -287,18 +297,18 @@ project names and resolve the fixed host-port conflict before starting Redis.
 
 GitHub Actions runs on pull requests, pushes to `master` and `release`, and manual
 dispatch. The reusable `checks.yml` workflow runs the full specs and builds the
-gem on Ruby 2.7, 3.0, 3.1, and 3.2, plus RuboCop on Ruby 2.7. It retains the
-existing CircleCI Ruby images and a disposable, job-local `redis` service without
-publishing host ports. Bundler 2.3.26 installs the locked dependencies without
+gem on Ruby 3.3, 3.4, and 4.0, plus RuboCop on Ruby 3.3. It retains the
+CircleCI Ruby images and a disposable, job-local `redis` service without
+publishing host ports. Bundler 4.0.23 installs the locked dependencies without
 dependency caches. Git trusts only the current workspace inside the container,
 and each build verifies that the gem includes every Ruby source under `lib/`.
-`ci.yml` also generates YARD documentation on Ruby 3.2.
+`ci.yml` also generates YARD documentation on Ruby 3.3.
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
 built gems, and YARD documentation. Test results and available coverage are saved
 even when specs fail. The `upload-coverage` job waits for the reusable checks,
-requires all four Ruby result files, and saves the combined
+requires all three Ruby result files, and saves the combined
 `coverage/coverage.json` as the `merged-coverage` artifact.
 
 To enable coverage reporting to Qlty, enable this repository in Qlty Cloud and
@@ -322,8 +332,8 @@ repository permissions and does not persist checkout credentials.
 `release.yml` is prepared for RubyGems Trusted Publishing. It remains disabled
 unless the repository variable `GHA_RELEASE_ENABLED` is exactly `true`. Once
 enabled, only pushes or manual dispatches on `release` can publish. The workflow
-reruns all four Ruby checks and RuboCop against the triggering commit, then
-publishes that same commit using Ruby 3.2 and Bundler 2.3.26. YARD and Qlty do not
+reruns all three Ruby checks and RuboCop against the triggering commit, then
+publishes that same commit using Ruby 3.3 and Bundler 4.0.23. YARD and Qlty do not
 gate publishing. The publishing job uses fresh dependencies without caches,
 checks for an existing version tag or published version, and is not cancelled by
 a newer run. Do not run a real release as a migration test.
@@ -355,15 +365,20 @@ protection, stop already queued jobs, or disable workflows still present on the
 old `release` branch. Both `GHA_RELEASE_ENABLED` and `GHA_CHALLENGE_ENABLED` must
 stay unset or `false` until the corresponding CircleCI writer is stopped.
 
-1. Verify Actions on a normal PR, a fork PR, and a Dependabot PR. Check all four
-   Ruby builds, RuboCop, YARD, JUnit artifacts, and the four-input coverage merge.
+1. Verify Actions on a normal PR, a fork PR, and a Dependabot PR. Check all three
+   Ruby builds, RuboCop, YARD, JUnit artifacts, and the three-input coverage merge.
    Confirm missing-token skipping and authenticated Qlty reporting separately.
 2. Once the Actions checks are available, use their exact reported
    names when updating required checks. Replace only the `ci/circleci:` entries;
    preserve `GitGuardian Security Checks`, strict up-to-date checks, and any
-   unrelated protections. Include all four Ruby builds, RuboCop, YARD, and
+   unrelated protections. Include all three Ruby builds, RuboCop, YARD, and
    `upload-coverage`. Verify a failing test or missing coverage input blocks
    merging before retiring CircleCI checks.
+
+   For the Ruby support update, also replace required checks for Ruby 2.7, 3.0,
+   3.1, and 3.2 with the reported checks for Ruby 3.3, 3.4, and 4.0. Keep RuboCop,
+   YARD, coverage, and unrelated protections required. Update protection only
+   after the new checks have run successfully.
 3. Prepare the Trusted Publisher and protected `release` environment. Stop and
    drain CircleCI publishing before setting `GHA_RELEASE_ENABLED=true`. Run the
    first real publish only as an explicitly requested release task; first
