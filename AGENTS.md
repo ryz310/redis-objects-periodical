@@ -28,7 +28,8 @@
 - Dependencies and packaging: [Gemfile](Gemfile),
   [redis-objects-periodical.gemspec](redis-objects-periodical.gemspec), and
   [Gemfile.lock](Gemfile.lock). CI lives in
-  [.circleci/config.yml](.circleci/config.yml), not GitHub Actions.
+  [.github/workflows/](.github/workflows/). External cutover and rollback steps
+  are in [README.md](README.md#circleci-migration-checklist).
 
 ## Task workflow
 
@@ -50,13 +51,13 @@
 - Preserve the repository's declared Ruby minimum of 2.7 (`required_ruby_version`)
   and `redis-objects ~> 1.0` dependency unless changing support is in scope.
   The Docker development baseline and RuboCop target are Ruby 2.7; the configured
-  CircleCI build matrix covers Ruby 2.7, 3.0, 3.1, and 3.2. These describe this
+  CI build matrix covers Ruby 2.7, 3.0, 3.1, and 3.2. These describe this
   repository's configuration, not upstream maintenance status.
 - This is a standalone gem. Rails/ActiveSupport is optional; preserve both
   `Time.current` and plain Ruby `Time.now` behavior without adding a Rails runtime
   dependency for convenience.
 - A support-policy change must align the gemspec, Dockerfile, Gemfile/lockfile,
-  RuboCop target, CircleCI matrix/coverage reporting, README, and this guide.
+  RuboCop target, CI matrix/coverage reporting, README, and this guide.
   Keep the Dockerfile's Bundler version compatible with Ruby and aligned with
   the lockfile's `BUNDLED WITH` version.
   Validate specs, lint, and gem build even if no `.rb` file changes.
@@ -100,7 +101,9 @@
   `git diff --check`; application specs/lint are unnecessary unless the task also
   requires validating the documented runtime procedure.
 - If validation is blocked, state the command and reason. Do not present static
-  checks or one local Ruby run as a successful CircleCI compatibility matrix.
+  checks or one local Ruby run as a successful CI compatibility matrix.
+- Validate workflow changes with actionlint and zizmor. Keep Actions SHA-pinned,
+  routine jobs read-only, and publishing free of restored dependency caches.
 
 ## Documentation, pull requests, and releases
 
@@ -118,6 +121,8 @@
   Feature, Bugfix, Security, Breaking Change, Rubocop Challenge, Dependabot, or
   Misc as applicable, omitting empty sections. Reserve Breaking Change for
   backward-incompatible behavior and combine repeated dependency bumps.
-- Releases require an explicit release task. CircleCI publishes from the
-  `release` branch; pushing there or running `rake release` is not routine
-  development. Keep version changes, tags, and publishing within that scope.
+- Releases require an explicit release task. The publisher uses the `release`
+  branch; pushing there or running `rake release` is not routine development.
+  Keep version changes, tags, and publishing within that scope. During migration,
+  keep the Actions write variables disabled until the corresponding CircleCI
+  writer is stopped; follow the README cutover and rollback checklist.

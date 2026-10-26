@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ryz310/redis-objects-periodical.svg?style=svg)](https://circleci.com/gh/ryz310/redis-objects-periodical) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical)
+[![CI](https://github.com/ryz310/redis-objects-periodical/actions/workflows/ci.yml/badge.svg)](https://github.com/ryz310/redis-objects-periodical/actions/workflows/ci.yml) [![Gem Version](https://badge.fury.io/rb/redis-objects-periodical.svg)](https://badge.fury.io/rb/redis-objects-periodical)
 [![Maintainability](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/maintainability.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
 [![Code Coverage](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical/coverage.svg)](https://qlty.sh/gh/ryz310/projects/redis-objects-periodical)
 
@@ -283,22 +283,102 @@ the development services with `docker compose down`; routine cleanup does not
 require deleting the bundle volume. For parallel checkouts, use distinct Compose
 project names and resolve the fixed host-port conflict before starting Redis.
 
-SimpleCov generates HTML and JSON coverage reports during specs. Each CircleCI
-Ruby build stores its `coverage/` directory in the job's **Artifacts** tab. After
-all four Ruby builds succeed, the separate `upload_coverage` job merges their
-results and saves `coverage/coverage.json` under **Artifacts > merged-coverage**.
+### Continuous integration
+
+GitHub Actions runs on pull requests, pushes to `master` and `release`, and manual
+dispatch. The reusable `checks.yml` workflow runs the full specs and builds the
+gem on Ruby 2.7, 3.0, 3.1, and 3.2, plus RuboCop on Ruby 2.7. It retains the
+existing CircleCI Ruby images and a disposable, job-local `redis` service without
+publishing host ports. Bundler 2.3.26 installs the locked dependencies without
+dependency caches. `ci.yml` also generates YARD documentation on Ruby 3.2.
+
+SimpleCov generates HTML and JSON coverage reports during specs. Workflow
+artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
+built gems, and YARD documentation. Test results and available coverage are saved
+even when specs fail. The `upload-coverage` job waits for the reusable checks,
+requires all four Ruby result files, and saves the combined
+`coverage/coverage.json` as the `merged-coverage` artifact.
 
 To enable coverage reporting to Qlty, enable this repository in Qlty Cloud and
-register a dedicated project coverage token as `QLTY_COVERAGE_TOKEN` in this
-project's CircleCI environment variables. Keep secret variables unavailable to
-fork pull requests. When the token is absent, CI still merges and stores coverage
-but explicitly skips the upload. When present, the pinned Qlty CircleCI Orb
-publishes the merged report; upload errors fail that job without being ignored.
-The token's value must not be committed to the repository or printed in logs.
+register a dedicated project coverage token as the GitHub Actions repository
+secret `QLTY_COVERAGE_TOKEN`. Keep secret variables unavailable to fork and
+Dependabot pull requests. When the token is absent, CI still merges and stores
+coverage but explicitly skips the upload. When present, the SHA-pinned Qlty
+Action publishes the merged report with `skip-errors: false`; upload errors fail
+that job. Never commit the token or print its value in logs.
 
 Qlty maintainability analysis and quality gates are configured separately in
 Qlty Cloud. Review their results before making new checks required. Coverage
 upload alone does not enable or verify those checks.
+
+Third-party and GitHub-owned Actions are pinned to full commit SHAs, with version
+comments. Dependabot checks for Actions updates weekly. Routine CI uses read-only
+repository permissions and does not persist checkout credentials.
+
+### Release and scheduled maintenance
+
+`release.yml` is prepared for RubyGems Trusted Publishing. It remains disabled
+unless the repository variable `GHA_RELEASE_ENABLED` is exactly `true`. Once
+enabled, only pushes or manual dispatches on `release` can publish. The workflow
+reruns all four Ruby checks and RuboCop against the triggering commit, then
+publishes that same commit using Ruby 3.2 and Bundler 2.3.26. YARD and Qlty do not
+gate publishing. The publishing job uses fresh dependencies without caches,
+checks for an existing version tag or published version, and is not cancelled by
+a newer run. Do not run a real release as a migration test.
+
+Before enabling publishing, register this gem's Trusted Publisher on RubyGems.org
+with owner `ryz310`, repository `redis-objects-periodical`, workflow filename
+`release.yml`, and environment `release`. Create the matching GitHub environment,
+restrict it to the `release` branch, and configure its protection rules. The
+publishing job alone receives `contents: write` and `id-token: write`; it does not
+use `RUBYGEMS_API_KEY`. See the [RubyGems Trusted Publishing guide](https://guides.rubygems.org/trusted-publishing/).
+
+`rubocop_challenge.yml` preserves the daily 08:30 JST schedule. Remote writes
+remain disabled unless the repository variable `GHA_CHALLENGE_ENABLED` is exactly
+`true`. Manual dispatch on `master` defaults to a read-only dry run using
+`--no-create-pr`, which needs neither that variable nor a PR token. Actual PR
+creation uses `GITHUB_TOKEN` with job-scoped `contents: write` and
+`pull-requests: write`. Enable **Allow GitHub Actions to create and approve pull
+requests** in the repository's Actions settings before enabling it. Check the
+created PR's CI and approve pending workflow runs if required; PR creation alone
+does not prove CI ran. Scheduled workflows run on the default branch, may be
+delayed, and can be disabled after 60 days without public repository activity.
+
+### CircleCI migration checklist
+
+The CircleCI configuration and badge have been removed. Repository administrators
+must complete the external settings below; removing a file does not update branch
+protection, stop already queued jobs, or disable workflows still present on the
+old `release` branch. Both `GHA_RELEASE_ENABLED` and `GHA_CHALLENGE_ENABLED` must
+stay unset or `false` until the corresponding CircleCI writer is stopped.
+
+1. Verify Actions on a normal PR, a fork PR, and a Dependabot PR. Check all four
+   Ruby builds, RuboCop, YARD, JUnit artifacts, and the four-input coverage merge.
+   Confirm missing-token skipping and authenticated Qlty reporting separately.
+2. Once the Actions checks are available, use their exact reported
+   names when updating required checks. Replace only the `ci/circleci:` entries;
+   preserve `GitGuardian Security Checks`, strict up-to-date checks, and any
+   unrelated protections. Include all four Ruby builds, RuboCop, YARD, and
+   `upload-coverage`. Verify a failing test or missing coverage input blocks
+   merging before retiring CircleCI checks.
+3. Prepare the Trusted Publisher and protected `release` environment. Stop and
+   drain CircleCI publishing before setting `GHA_RELEASE_ENABLED=true`. Run the
+   first real publish only as an explicitly requested release task; first
+   inspect existing tags and RubyGems versions, including any partial release.
+4. Run the Challenge dry run. Stop and drain the CircleCI Challenge schedule
+   before setting `GHA_CHALLENGE_ENABLED=true`. Check an actual generated PR and
+   its CI before considering this step complete.
+5. Stop the CircleCI project and confirm no queued or running jobs remain. Remove
+   obsolete CircleCI credentials and integration only after confirming they are
+   not shared with other projects. Keep the migration commit available for
+   restoring the previous configuration if needed.
+
+For rollback, disable the Actions write variables and drain any running jobs
+before restoring the corresponding CircleCI writer. Restore previously recorded
+required checks together with the previous CircleCI configuration and keep at
+least one complete CI path active. Never enable both
+publishers or both Challenge writers at once. Do not delete existing release tags
+or retry publishing blindly after a partial failure.
 
 ## Contributing
 

@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    # Keep CircleCI as the publisher until the documented cutover is complete.
+    if: ${{ vars.GHA_RELEASE_ENABLED == 'true' && github.ref == 'refs/heads/release' }}
+    uses: ./.github/workflows/checks.yml
+
+  publish:
+    needs: checks
+    if: ${{ vars.GHA_RELEASE_ENABLED == 'true' && github.ref == 'refs/heads/release' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      BUNDLE_FROZEN: 'true'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Ruby without dependency caches
+        uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
+        with:
+          ruby-version: '3.2'
+          bundler: '2.3.26'
+          bundler-cache: false
+      - name: Install locked dependencies
+        run: bundle install
+      - name: Check release version and prepare the tested commit
+        run: |
+          git checkout -B release "$GITHUB_SHA"
+          version=$(bundle exec ruby -r ./lib/redis/objects/periodical/version -e 'puts Redis::Objects::Periodical::VERSION')
+          if git show-ref --verify --quiet "refs/tags/v$version"; then
+            echo "Tag v$version already exists. Inspect the previous release before retrying."
+            exit 1
+          fi
+          status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            "https://rubygems.org/api/v2/rubygems/redis-objects-periodical/versions/$version.json")
+          if [ "$status" != 404 ]; then
+            echo "Expected an unpublished version (HTTP 404); received HTTP $status."
+            exit 1
+          fi
+      - name: Publish via RubyGems Trusted Publishing
+        uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
