@@ -17,3 +17,17 @@ updates:
   - dependency-name: simplecov
     versions:
     - ">= 0.19.a, < 0.20"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: monday
+    time: "08:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 10
+  reviewers:
+  - ryz310
+  assignees:
+  - ryz310
+  labels:
+  - dependabot
