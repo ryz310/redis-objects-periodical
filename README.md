@@ -332,10 +332,45 @@ repository permissions and does not persist checkout credentials.
 ### Optional ActiveSupport integration
 
 The regular suite excludes `spec/integration/**/*_spec.rb` so its plain Ruby
-checks do not load ActiveSupport. A separate process uses
-`gemfiles/active_support.gemfile` and its lockfile to test ActiveSupport 7.0,
-using the Ruby 3.3 baseline. This is an optional test dependency,
-not a new runtime dependency or a promise to support every Rails version.
+checks do not load ActiveSupport. The separate `active-support-timezone` job runs
+on the minimum supported Ruby (currently 3.3), using
+`gemfiles/active_support.gemfile` and its own lockfile. ActiveSupport is an
+optional integration-test dependency; the gem remains usable without Rails or
+ActiveSupport. This job verifies the selected Ruby/ActiveSupport pair; other
+Rails releases and Ruby/ActiveSupport combinations are outside its verified scope.
+
+#### ActiveSupport version selection
+
+Select the newest stable ActiveSupport minor series that accepts the gem's
+minimum Ruby version and is still covered by upstream security maintenance at
+the time of review. Revisit the selection as Ruby requirements and upstream
+maintenance change. Check both the
+[RubyGems Ruby requirement](https://rubygems.org/gems/activesupport) and the
+[Rails maintenance policy](https://rubyonrails.org/maintenance) when selecting
+or reviewing the series.
+
+As reviewed on 2026-10-27, the selected series is **ActiveSupport 8.1** with
+`gem 'activesupport', '~> 8.1.4'`. Version
+[8.1.4 requires Ruby >= 3.2.0](https://rubygems.org/gems/activesupport/versions/8.1.4),
+so it can be tested on the Ruby 3.3 baseline. The upstream policy currently lists
+security maintenance for 8.1 through 2027-10-10. Regular bug-fix maintenance
+follows a separate support window.
+
+The constraint allows `>= 8.1.4, < 8.2`, including later patches/security releases
+in 8.1. The separate lockfile pins the exact tested release (currently 8.1.4),
+and CI installs that lockfile with `BUNDLE_FROZEN=true`; CI does not resolve a new
+version on every run. Raising the patch floor or selecting another minor/major
+series requires an explicit dependency change and successful validation.
+
+Review this choice when the Ruby minimum changes, a newer compatible stable
+series is released, or the selected series approaches the end of security
+maintenance. Update the constraint and optional lockfile together, retain
+unrelated baseline dependencies where compatible, and run the isolated timezone
+suite, the plain-Ruby suite, RuboCop, and the gem build. Record the reviewed date,
+chosen release, and upstream sources in this section; report verification results
+in the PR. Compatibility with older ActiveSupport releases remains outside this
+job's verified scope. The optional dependency does not change
+the gemspec's Ruby requirement or add an ActiveSupport runtime dependency.
 
 The integration checks all six periods and four object types against real Redis,
 with `Time.zone` set to `Asia/Tokyo` and unset. Timecop freezes UTC at year/month
