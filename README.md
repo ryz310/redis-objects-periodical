@@ -469,6 +469,10 @@ constraints, source/platform changes, third-party Actions, and workflow
 permission/trigger/step changes require manual review. Unknown metadata, missing
 or incomplete patches, a changed PR head, forks, and API errors do not enable
 merging. The enable mutation also requires the exact inspected head commit.
+If GitHub rejects enabling auto-merge specifically because the PR is already in
+clean status, the workflow repeats policy and protection verification and checks
+the current head, base, open/clean state, and absence of a reservation before
+merging with an exact-head guard. Other enable errors fail the workflow.
 
 The privileged workflow uses `pull_request_target` only to obtain the write
 permissions unavailable on normal Dependabot PR events. It checks out only the
