@@ -23,9 +23,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Test auto-merge policy without API writes
-        run: node --test .github/scripts/dependabot-policy.test.cjs
-      - name: Test timezone execution inventory guard
-        run: node --test .github/scripts/timezone-inventory.test.cjs
+        run: node --test .github/scripts/*.test.cjs
 
   active_support_timezone:
     name: active-support-timezone
