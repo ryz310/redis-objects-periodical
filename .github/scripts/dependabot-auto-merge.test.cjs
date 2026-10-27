@@ -40,7 +40,7 @@ function harness() {
     },
   };
   return { github, context, core: { notice: message => notices.push(message) },
-    metadata: { ecosystem: 'github-actions', updateType: 'version-update:semver-major', dependencyNames: 'actions/checkout' },
+    metadata: { ecosystem: 'github_actions', updateType: 'version-update:semver-major', dependencyNames: 'actions/checkout' },
     metadataOutcome: 'success', state, reservation, states, pr, run, calls, notices };
 }
 
