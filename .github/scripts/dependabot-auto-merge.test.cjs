@@ -10,7 +10,8 @@ function harness() {
   const reservation = { enabledAt: '2026-10-27T00:00:00Z',
     enabledBy: { login: 'github-actions[bot]', __typename: 'Bot' },
     commitBody: reservationBody(context), mergeMethod: 'MERGE' };
-  const state = { id: 'PR_node', state: 'OPEN', headRefOid: 'a'.repeat(40), autoMergeRequest: reservation };
+  const state = { id: 'PR_node', state: 'OPEN', headRefOid: 'a'.repeat(40),
+    baseRefName: 'master', mergeStateStatus: 'BLOCKED', autoMergeRequest: reservation };
   const calls = [], notices = [], states = [];
   const pr = { number: 1, user: { login: 'dependabot[bot]' }, state: 'open', draft: false,
     base: { ref: 'master', sha: 'base', repo: { full_name: 'ryz310/redis-objects-periodical' } },
@@ -24,6 +25,11 @@ function harness() {
       additions: 1, deletions: 1, patch: '@@ -1 +1 @@\n-  uses: actions/checkout@' + 'a'.repeat(40) +
         '\n+  uses: actions/checkout@' + 'b'.repeat(40) }] : [],
     graphql: async (query, variables) => {
+      if (query.includes('mergePullRequest')) {
+        assert.match(query, /expectedHeadOid: \$head, mergeMethod: MERGE/);
+        calls.push(['merge', variables]); state.state = 'MERGED';
+        return { mergePullRequest: { pullRequest: { ...state, merged: true } } };
+      }
       if (query.includes('disablePullRequestAutoMerge')) {
         calls.push(['disable', variables]); state.autoMergeRequest = null;
         return { disablePullRequestAutoMerge: { pullRequest: state } };
@@ -171,3 +177,102 @@ test('privileged workflow keeps trusted-base execution and failure cleanup wired
   assert.match(workflow, /METADATA_OUTCOME: \$\{\{ steps.metadata.outcome \}\}/);
   assert.match(workflow, /await reconcile\(/);
 });
+
+
+// Reproduce the reviewer-observed clean-status response in Octokit's structured
+// GraphqlResponseError shape; no live merge or reservation is used by these tests.
+function cleanStatusFailure() {
+  const failure = new Error('Request failed due to following response errors:\n - Pull request Pull request is in clean status');
+  failure.name = 'GraphqlResponseError';
+  failure.errors = [{ type: 'UNPROCESSABLE', path: ['enablePullRequestAutoMerge'],
+    message: 'Pull request Pull request is in clean status' }];
+  return failure;
+}
+
+function cleanHarness(failure = cleanStatusFailure(), afterEnable = () => {}) {
+  const input = harness(); input.state.autoMergeRequest = null;
+  input.state.mergeStateStatus = 'CLEAN';
+  input.metadata.updateType = 'version-update:semver-patch';
+  const graphql = input.github.graphql;
+  input.github.graphql = async (query, variables) => {
+    if (query.includes('enablePullRequestAutoMerge')) {
+      input.calls.push(['enable', variables]);
+      afterEnable(input);
+      throw failure;
+    }
+    return graphql(query, variables);
+  };
+  return input;
+}
+
+test('an eligible PR with passing checks falls back to a guarded merge after the exact clean-status error', async () => {
+  const input = cleanHarness(); let protectionReads = 0;
+  const paginate = input.github.paginate;
+  input.github.paginate = async (endpoint, variables) => {
+    if (endpoint !== 'files') protectionReads++;
+    return paginate(endpoint, variables);
+  };
+  await reconcile(input);
+  assert.equal(protectionReads, 2, 'Verify protection again immediately before the merge');
+  assert.deepEqual(input.calls.map(call => call[0]), ['enable', 'merge']);
+  assert.deepEqual(input.calls[1][1], { id: 'PR_node', head: 'a'.repeat(40) });
+  assert.ok(input.notices.some(message => message.startsWith('Merged the inspected head')));
+});
+
+for (const scenario of ['plain-message', 'forbidden', 'network', 'wrong-mutation', 'wrong-type', 'unknown-message', 'mixed-errors']) {
+  test(`clean-status fallback does not accept ${scenario}`, async () => {
+    let failure = cleanStatusFailure();
+    if (scenario === 'plain-message') failure = new Error(failure.errors[0].message);
+    if (scenario === 'forbidden') failure.errors[0].type = 'FORBIDDEN';
+    if (scenario === 'network') failure.name = 'HttpError';
+    if (scenario === 'wrong-mutation') failure.errors[0].path = ['mergePullRequest'];
+    if (scenario === 'wrong-type') failure.errors[0].type = 'NOT_FOUND';
+    if (scenario === 'unknown-message') failure.errors[0].message = 'Unknown clean-status error';
+    if (scenario === 'mixed-errors') failure.errors.push({ type: 'FORBIDDEN', message: 'Forbidden' });
+    const input = cleanHarness(failure);
+    await assert.rejects(reconcile(input), /Auto-merge reconciliation failed/);
+    assert.deepEqual(input.calls.map(call => call[0]), ['enable']);
+  });
+}
+
+for (const scenario of ['head', 'base', 'closed', 'blocked', 'unknown-status', 'new-human-reservation', 'protection']) {
+  test(`clean-status fallback refuses a changed ${scenario}`, async () => {
+    const input = cleanHarness(cleanStatusFailure(), current => {
+      if (scenario === 'head') current.state.headRefOid = 'b'.repeat(40);
+      if (scenario === 'base') current.state.baseRefName = 'release';
+      if (scenario === 'closed') current.state.state = 'CLOSED';
+      if (scenario === 'blocked') current.state.mergeStateStatus = 'BLOCKED';
+      if (scenario === 'unknown-status') current.state.mergeStateStatus = 'UNKNOWN';
+      if (scenario === 'new-human-reservation') current.state.autoMergeRequest = {
+        ...current.reservation, enabledBy: { login: 'maintainer', __typename: 'User' },
+      };
+      if (scenario === 'protection') {
+        const graphql = current.github.graphql;
+        current.github.graphql = async (query, variables) => query.includes('autoMergeAllowed') ?
+          { repository: { autoMergeAllowed: false } } : graphql(query, variables);
+      }
+    });
+    await assert.rejects(reconcile(input), /Policy changed|PR state changed/);
+    assert.deepEqual(input.calls.map(call => call[0]), ['enable']);
+  });
+}
+
+test('retargeting during clean-status fallback is rejected by the repeated policy evaluation', async () => {
+  const input = cleanHarness(cleanStatusFailure(), current => { current.pr.base.ref = 'release'; });
+  await assert.rejects(reconcile(input), /Policy changed/);
+  assert.deepEqual(input.calls.map(call => call[0]), ['enable']);
+});
+
+for (const scenario of ['api-error', 'not-merged', 'wrong-head', 'missing-response']) {
+  test(`clean-status merge fails visibly on ${scenario}`, async () => {
+    const input = cleanHarness(); const graphql = input.github.graphql;
+    input.github.graphql = async (query, variables) => {
+      if (!query.includes('mergePullRequest')) return graphql(query, variables);
+      if (scenario === 'api-error') throw new Error('Head or protection changed');
+      if (scenario === 'missing-response') return { mergePullRequest: null };
+      return { mergePullRequest: { pullRequest: { merged: scenario !== 'not-merged',
+        headRefOid: scenario === 'wrong-head' ? 'b'.repeat(40) : input.state.headRefOid } } };
+    };
+    await assert.rejects(reconcile(input), /Head or protection changed|Could not confirm/);
+  });
+}
