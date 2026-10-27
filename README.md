@@ -261,8 +261,22 @@ Agent workflow, compatibility constraints, and validation rules are documented i
 
 The specs connect to the Compose service at `redis:6379` and run `flushdb` after
 every example. Use a disposable Redis instance dedicated to this checkout. The
-current Compose file publishes host port 6379, which must be available; do not
-redirect tests to an existing Redis containing data you want to keep.
+Redis service is accessible only inside its Compose network; no host port is
+published. Do not redirect tests to an existing Redis containing data you want
+to keep.
+
+Development Redis uses
+`redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901`,
+the same immutable image digest as the Redis services in
+[checks.yml](.github/workflows/checks.yml) and [ci.yml](.github/workflows/ci.yml).
+The digest fixes the image contents even if the `latest` tag moves.
+
+To update Redis, review the intended server version and release notes, then
+update the image reference in `docker-compose.yml`, both CI workflows, and this
+paragraph together. Pull the selected image with `docker compose pull redis`,
+recreate the disposable service with `docker compose up -d redis`, and run the
+full specs below. Validate workflow edits with actionlint and zizmor, and check
+the Ruby matrix and optional ActiveSupport job in CI before merging.
 
 Build the development image, start Redis, and install the locked dependencies:
 
@@ -290,8 +304,23 @@ docker compose run --rm ruby bundle exec yardoc
 
 Rebuild the image and run `bundle install` again after dependency changes. Stop
 the development services with `docker compose down`; routine cleanup does not
-require deleting the bundle volume. For parallel checkouts, use distinct Compose
-project names and resolve the fixed host-port conflict before starting Redis.
+require deleting the bundle volume.
+
+For parallel checkouts, choose a distinct Compose project name in each checkout's
+shell before running any of the commands above:
+
+```sh
+# Use a different name in each checkout, for example rop-feature-b in the second.
+export COMPOSE_PROJECT_NAME=rop-feature-a
+```
+
+Keep that name for every Compose command in the same checkout, including
+`docker compose down`. Compose then creates separate Redis services, networks,
+and bundle volumes for each project. Do not give those resources a shared name
+or attach another project's Redis to the test network. Run specs inside the
+`ruby` service so the internal `redis:6379` endpoint resolves to that project's
+disposable Redis. For an interactive Redis client, use
+`docker compose exec redis redis-cli`; host-port publishing is unnecessary.
 
 ### Continuous integration
 

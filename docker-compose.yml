@@ -9,9 +9,7 @@ services:
       - .:/my_app
       - bundle:/usr/local/bundle
   redis:
-    image: redis:latest
-    ports:
-      - 6379:6379
+    image: redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901
 
 volumes:
   bundle:
