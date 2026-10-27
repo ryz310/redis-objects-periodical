@@ -30,6 +30,14 @@ async function readState(github, context) {
   return pr;
 }
 
+function validOwnershipMarker(marker, context) {
+  const matchesWorkflow = marker.version === 1 && marker.workflow === workflowPath;
+  const matchesPullRequest = marker.repository === `${context.repo.owner}/${context.repo.repo}` &&
+    marker.number === context.payload.pull_request.number;
+  const validIdentity = /^[a-f0-9]{40}$/.test(marker.head) && /^[1-9][0-9]*$/.test(marker.run);
+  return matchesWorkflow && matchesPullRequest && validIdentity;
+}
+
 async function ownedReservation(github, context, reservation) {
   if (!reservation) return false;
   if (reservation.enabledBy?.login !== 'github-actions[bot]' ||
@@ -38,11 +46,7 @@ async function ownedReservation(github, context, reservation) {
   let marker;
   try { marker = JSON.parse(reservation.commitBody.slice(markerPrefix.length)); }
   catch { return false; }
-  if (marker.version !== 1 || marker.workflow !== workflowPath) return false;
-  const matchesPullRequest = marker.repository === `${context.repo.owner}/${context.repo.repo}` &&
-    marker.number === context.payload.pull_request.number;
-  const validIdentity = /^[a-f0-9]{40}$/.test(marker.head) && /^[1-9][0-9]*$/.test(marker.run);
-  if (!matchesPullRequest || !validIdentity) return false;
+  if (!validOwnershipMarker(marker, context)) return false;
   // GITHUB_TOKEN is shared across workflows: verify the marker's run provenance too.
   const { data: run } = await github.rest.actions.getWorkflowRun({
     ...context.repo, run_id: marker.run,
