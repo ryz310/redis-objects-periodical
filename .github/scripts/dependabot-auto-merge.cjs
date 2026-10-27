@@ -18,7 +18,7 @@ async function readState(github, context) {
   const result = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
     repository(owner: $owner, name: $repo) {
       pullRequest(number: $number) {
-        id state headRefOid
+        id state headRefOid baseRefName mergeStateStatus
         autoMergeRequest { enabledAt enabledBy { login __typename } commitBody mergeMethod }
       }
     }
@@ -38,10 +38,11 @@ async function ownedReservation(github, context, reservation) {
   let marker;
   try { marker = JSON.parse(reservation.commitBody.slice(markerPrefix.length)); }
   catch { return false; }
-  if (marker.version !== 1 || marker.workflow !== workflowPath ||
-      marker.repository !== `${context.repo.owner}/${context.repo.repo}` ||
-      marker.number !== context.payload.pull_request.number ||
-      !/^[a-f0-9]{40}$/.test(marker.head) || !/^[1-9][0-9]*$/.test(marker.run)) return false;
+  if (marker.version !== 1 || marker.workflow !== workflowPath) return false;
+  const matchesPullRequest = marker.repository === `${context.repo.owner}/${context.repo.repo}` &&
+    marker.number === context.payload.pull_request.number;
+  const validIdentity = /^[a-f0-9]{40}$/.test(marker.head) && /^[1-9][0-9]*$/.test(marker.run);
+  if (!matchesPullRequest || !validIdentity) return false;
   // GITHUB_TOKEN is shared across workflows: verify the marker's run provenance too.
   const { data: run } = await github.rest.actions.getWorkflowRun({
     ...context.repo, run_id: marker.run,
@@ -81,6 +82,41 @@ async function revoke({ github, context, core, state }) {
   core.notice('Revoked this workflow\'s auto-merge reservation.');
 }
 
+function cleanStatusError(error) {
+  // Octokit preserves the structured GraphQL errors separately from Error.message.
+  if (error.name !== 'GraphqlResponseError' || !Array.isArray(error.errors) ||
+      error.errors.length !== 1) return false;
+  const failure = error.errors[0];
+  return failure.type === 'UNPROCESSABLE' &&
+    JSON.stringify(failure.path) === JSON.stringify(['enablePullRequestAutoMerge']) &&
+    failure.message === 'Pull request Pull request is in clean status';
+}
+
+async function mergeCleanUpdate({ github, context, core, metadata }) {
+  // Repeat the entire policy/protection check; the PR base can change without a
+  // new head OID. A fresh final snapshot also preserves newly created reservations.
+  if (!await evaluate({ github, context, core, metadata })) {
+    throw new Error('Policy changed after the clean-status response; inspect the PR manually.');
+  }
+  const current = await readState(github, context);
+  const sameTarget = current.headRefOid === context.payload.pull_request.head.sha &&
+    current.baseRefName === 'master';
+  const ready = current.state === 'OPEN' && current.mergeStateStatus === 'CLEAN';
+  if (!sameTarget || !ready || current.autoMergeRequest) {
+    throw new Error('PR state changed before the clean-status merge; inspect the PR manually.');
+  }
+  const result = await github.graphql(`mutation($id: ID!, $head: GitObjectID!) {
+    mergePullRequest(input: {pullRequestId: $id, expectedHeadOid: $head, mergeMethod: MERGE}) {
+      pullRequest { id headRefOid merged }
+    }
+  }`, { id: current.id, head: current.headRefOid });
+  const merged = result.mergePullRequest?.pullRequest;
+  if (merged?.merged !== true || merged.headRefOid !== current.headRefOid) {
+    throw new Error('Could not confirm the clean-status merge; inspect the PR manually.');
+  }
+  core.notice('Merged the inspected head after all required checks passed.');
+}
+
 async function reconcileState({ github, context, core, metadata, metadataOutcome }) {
   const state = await readState(github, context);
   if (state.headRefOid !== context.payload.pull_request.head.sha) {
@@ -112,11 +148,18 @@ async function reconcileState({ github, context, core, metadata, metadataOutcome
     core.notice('Preserving the existing auto-merge reservation.');
     return;
   }
-  const result = await github.graphql(`mutation($id: ID!, $head: GitObjectID!, $body: String!) {
-    enablePullRequestAutoMerge(input: {
-      pullRequestId: $id, expectedHeadOid: $head, mergeMethod: MERGE, commitBody: $body
-    }) { pullRequest { id headRefOid autoMergeRequest { commitBody } } }
-  }`, { id: current.id, head: current.headRefOid, body: reservationBody(context) });
+  let result;
+  try {
+    result = await github.graphql(`mutation($id: ID!, $head: GitObjectID!, $body: String!) {
+      enablePullRequestAutoMerge(input: {
+        pullRequestId: $id, expectedHeadOid: $head, mergeMethod: MERGE, commitBody: $body
+      }) { pullRequest { id headRefOid autoMergeRequest { commitBody } } }
+    }`, { id: current.id, head: current.headRefOid, body: reservationBody(context) });
+  } catch (error) {
+    if (!cleanStatusError(error)) throw error;
+    await mergeCleanUpdate({ github, context, core, metadata });
+    return;
+  }
   const enabled = result.enablePullRequestAutoMerge?.pullRequest;
   if (enabled?.headRefOid !== current.headRefOid ||
       enabled.autoMergeRequest?.commitBody !== reservationBody(context)) {
