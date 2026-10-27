@@ -37,7 +37,18 @@ const file = (filename, removed, added) => ({
 });
 const lockFile = file('Gemfile.lock', ['    rspec (3.13.1)'], ['    rspec (3.13.2)']);
 const lockInput = { metadata, files: [lockFile], baseLock, headLock };
-const actionMetadata = { ...metadata, ecosystem: 'github-actions', dependencyNames: 'actions/checkout' };
+// Representative outputs from the pinned dependabot/fetch-metadata action:
+// src/dependabot/update_metadata.ts derives this ecosystem from dependabot/github_actions/...
+const actionOutputs = {
+  'package-ecosystem': 'github_actions',
+  'update-type': 'version-update:semver-patch',
+  'dependency-names': 'actions/checkout',
+};
+const actionMetadata = {
+  ecosystem: actionOutputs['package-ecosystem'],
+  updateType: actionOutputs['update-type'],
+  dependencyNames: actionOutputs['dependency-names'],
+};
 const actionFile = file('.github/workflows/ci.yml',
   ['      - uses: actions/checkout@' + 'a'.repeat(40) + ' # v6.0.0'],
   ['      - uses: actions/checkout@' + 'b'.repeat(40) + ' # v6.0.1']);
@@ -112,6 +123,11 @@ test('rejects an official-action PR that also alters permissions', () => {
     ['      - uses: actions/checkout@' + 'b'.repeat(40), '  contents: write']);
   assert.equal(assessUpdate({ ...actionInput, files: [unsafe] }), false);
 });
+for (const ecosystem of ['github-actions', 'github_action', '', 'unknown']) {
+  test(`rejects an unrecognized Actions ecosystem ${JSON.stringify(ecosystem)}`, () => {
+    assert.equal(assessUpdate({ ...actionInput, metadata: { ...actionMetadata, ecosystem } }), false);
+  });
+}
 test('rejects unknown ecosystems and non-workflow action changes', () => {
   assert.equal(assessUpdate({ ...actionInput, metadata: { ...actionMetadata, ecosystem: 'docker' } }), false);
   assert.equal(assessUpdate({ ...actionInput, files: [{ ...actionFile, filename: '.github/scripts/policy.cjs' }] }), false);
