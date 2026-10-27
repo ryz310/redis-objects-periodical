@@ -399,7 +399,7 @@ x four object types: **96 examples, with 48 per zone setting**. This covers the
 selected Tokyo/unset cases and year/month/week boundaries; other zones and DST
 transitions remain outside this suite's verified scope.
 
-#### Recorded execution evidence and open gap
+#### Recorded execution evidence and automated inventory guard
 
 On 2026-10-27, the JUnit artifact from the
 [successful CI run for commit 8ab4de1](https://github.com/ryz310/redis-objects-periodical/actions/runs/40409599457)
@@ -419,17 +419,16 @@ the zone does not make every Tokyo example fail. This experiment confirms that
 the assertions detect ineffective timezone selection; it is a recorded one-off
 diagnostic, not an additional CI step.
 
-**Open verification gap:** the [workflow](.github/workflows/ci.yml) runs the
-explicit spec file and overrides the default exclusion, but it does not validate
-the per-zone execution inventory in the JUnit report. The evidence above confirms
-this particular run included both groups. A future filter or removal could leave
-only the unset group running and passing without an explicit missing-group error.
-
-Follow-up work is to fail CI when either intended zone group is absent or empty,
-or intended examples are skipped, using explicit group execution and/or JUnit
-validation. Keep that
-inventory check aligned with deliberate changes to the fixtures. This guard is
-not implemented by the current workflow.
+The [workflow](.github/workflows/ci.yml) also emits an RSpec JSON report and runs
+an [execution inventory guard](.github/scripts/timezone-inventory.cjs). The guard
+requires every expected boundary/zone/period/type combination exactly once, with
+status `passed`. Missing groups or individual combinations, empty selections,
+pending/skipped examples, duplicates, and unexpected examples fail the job.
+The expected dimensions have one definition in the guard; update it alongside
+intentional changes to the integration fixtures. Its regression tests include
+missing Tokyo/unset groups and rejected empty/pending reports. The historical
+run above remains evidence for that commit, while this check enforces the
+inventory on subsequent runs.
 
 Run it separately with the same disposable Compose Redis as the regular suite:
 
