@@ -70,11 +70,13 @@ appeared on a PR:
 2. On `master`, require status checks and require the branch to be up to date.
    Keep all three `checks / build_on_ruby_*` checks, `checks / rubocop`, `yardoc`,
    and `upload-coverage`; add `active-support-timezone` and `dependabot-policy`.
-3. Set repository variable `GHA_DEPENDABOT_AUTOMERGE_ENABLED=true` only after
-   confirming those settings. Until then, the auto-merge job skips all writes.
-4. Verify on an eligible Dependabot PR that a failing required check prevents
-   merging and that an excluded update stays manual. Re-run the metadata workflow
-   for existing PRs after setup, or let their next update trigger it.
+3. Verify on an eligible Dependabot PR that a failing required check prevents
+   merging and that an excluded update stays manual. For existing PRs, let their
+   next update trigger the workflow.
+
+Matching Dependabot PR events run the workflow without a separate enable
+variable. The policy below verifies the repository settings before allowing a
+merge.
 
 The policy verifies the repository's auto-merge setting and the effective
 rulesets plus any classic branch protection, including all eight named checks and
@@ -99,11 +101,13 @@ external write between the final read and cancellation cannot be guarded
 atomically by this API.
 
 Merge queues are not supported. No branch-protection, repository-variable, or
-publication setting is changed by the workflow. Disabling
-`GHA_DEPENDABOT_AUTOMERGE_ENABLED` skips the entire job, including cancellation.
-When rolling back, disable auto-merge on already-reserved PRs separately. Also
-inspect reservations manually if the job is skipped (for example after retargeting
-away from `master`), checkout fails, a run is cancelled or times out, or an
+publication setting is changed by the workflow. When rolling back,
+[disable the Dependabot Auto Merge workflow](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows)
+to prevent new runs, cancel any active runs, and disable auto-merge on
+already-reserved PRs separately. Disabling the workflow does not cancel active
+runs or revoke existing reservations. Also inspect reservations manually if the
+job is skipped (for example after retargeting away from `master`), checkout fails,
+a run is cancelled or times out, or an
 ownership marker's originating run is no longer available. Only the configured
 PR events trigger re-evaluation; settings changes do not trigger it.
 

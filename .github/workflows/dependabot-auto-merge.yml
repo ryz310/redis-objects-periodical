@@ -16,8 +16,7 @@ permissions: {}
 jobs:
   enable:
     if: >-
-      ${{ vars.GHA_DEPENDABOT_AUTOMERGE_ENABLED == 'true' &&
-          github.event.pull_request.user.login == 'dependabot[bot]' &&
+      ${{ github.event.pull_request.user.login == 'dependabot[bot]' &&
           github.event.pull_request.base.ref == 'master' &&
           github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
