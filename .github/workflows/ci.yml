@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Test auto-merge policy without API writes
-        run: node --test .github/scripts/dependabot-policy.test.cjs
+        run: node --test .github/scripts/*.test.cjs
 
   active_support_timezone:
     name: active-support-timezone
@@ -63,7 +63,16 @@ jobs:
         run: |
           mkdir -p test-results
           bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern '' \
-            --format RspecJunitFormatter --out test-results/active-support.xml
+            --format RspecJunitFormatter --out test-results/active-support.xml \
+            --format json --out test-results/active-support.json
+      - name: Verify every intended timezone example passed
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const { readFileSync } = require('node:fs');
+            const { validateInventory } = require('./.github/scripts/timezone-inventory.cjs');
+            const report = JSON.parse(readFileSync('test-results/active-support.json', 'utf8'));
+            core.info(`Verified ${validateInventory(report)} passed timezone integration examples`);
       - name: Store integration results
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
