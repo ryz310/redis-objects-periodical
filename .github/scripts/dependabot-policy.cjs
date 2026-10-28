@@ -50,7 +50,7 @@ function assessUpdate({ metadata, files, baseLock = '', headLock = '' }) {
       /^    [\w-]+ \([0-9][^)]*\)$/.test(line) || /^      [\w-]+(?: \([^)]*\))?$/.test(line));
   }
 
-  if (metadata.ecosystem !== 'github-actions' || !names.every(name => officialActions.has(name))) {
+  if (metadata.ecosystem !== 'github_actions' || !names.every(name => officialActions.has(name))) {
     return false;
   }
   return files.every(file => {

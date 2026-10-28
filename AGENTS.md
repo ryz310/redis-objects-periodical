@@ -70,10 +70,12 @@
   after every example. Use only the disposable Redis belonging to this checkout;
   never point that hostname at shared or production data. Do not assume setting
   `REDIS_URL` redirects this test suite.
-- Compose currently publishes host port 6379. If it is occupied, report the
-  conflict; do not stop another project's Redis. For parallel checkouts, use
-  distinct Compose project names and explicitly resolve host-port conflicts;
-  a project name alone does not isolate the published port.
+- Compose does not publish Redis to a host port. For parallel checkouts, set a
+  distinct `COMPOSE_PROJECT_NAME` in each checkout's shell before any Compose
+  commands and keep it for setup, tests, and cleanup. Project names isolate the
+  Redis service, default network, and bundle volume; do not override them with
+  shared resource names or connect another project's Redis to the test network.
+  Use `docker compose exec redis redis-cli` for an interactive Redis client.
 - Use `bundle exec` for project tools. After dependency changes, rebuild the
   image and run `bundle install` in the mounted service so the bundle volume
   matches the lockfile. Avoid an unrelated `bundle update`.

@@ -261,8 +261,22 @@ Agent workflow, compatibility constraints, and validation rules are documented i
 
 The specs connect to the Compose service at `redis:6379` and run `flushdb` after
 every example. Use a disposable Redis instance dedicated to this checkout. The
-current Compose file publishes host port 6379, which must be available; do not
-redirect tests to an existing Redis containing data you want to keep.
+Redis service is accessible only inside its Compose network; no host port is
+published. Do not redirect tests to an existing Redis containing data you want
+to keep.
+
+Development Redis uses
+`redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901`,
+the same immutable image digest as the Redis services in
+[checks.yml](.github/workflows/checks.yml) and [ci.yml](.github/workflows/ci.yml).
+The digest fixes the image contents even if the `latest` tag moves.
+
+To update Redis, review the intended server version and release notes, then
+update the image reference in `docker-compose.yml`, both CI workflows, and this
+paragraph together. Pull the selected image with `docker compose pull redis`,
+recreate the disposable service with `docker compose up -d redis`, and run the
+full specs below. Validate workflow edits with actionlint and zizmor, and check
+the Ruby matrix and optional ActiveSupport job in CI before merging.
 
 Build the development image, start Redis, and install the locked dependencies:
 
@@ -290,8 +304,23 @@ docker compose run --rm ruby bundle exec yardoc
 
 Rebuild the image and run `bundle install` again after dependency changes. Stop
 the development services with `docker compose down`; routine cleanup does not
-require deleting the bundle volume. For parallel checkouts, use distinct Compose
-project names and resolve the fixed host-port conflict before starting Redis.
+require deleting the bundle volume.
+
+For parallel checkouts, choose a distinct Compose project name in each checkout's
+shell before running any of the commands above:
+
+```sh
+# Use a different name in each checkout, for example rop-feature-b in the second.
+export COMPOSE_PROJECT_NAME=rop-feature-a
+```
+
+Keep that name for every Compose command in the same checkout, including
+`docker compose down`. Compose then creates separate Redis services, networks,
+and bundle volumes for each project. Do not give those resources a shared name
+or attach another project's Redis to the test network. Run specs inside the
+`ruby` service so the internal `redis:6379` endpoint resolves to that project's
+disposable Redis. For an interactive Redis client, use
+`docker compose exec redis redis-cli`; host-port publishing is unnecessary.
 
 ### Continuous integration
 
@@ -467,7 +496,11 @@ Bundler itself, runtime dependencies, optional integration lockfiles, manifest
 constraints, source/platform changes, third-party Actions, and workflow
 permission/trigger/step changes require manual review. Unknown metadata, missing
 or incomplete patches, a changed PR head, forks, and API errors do not enable
-merging. The merge command also matches the exact inspected head commit.
+merging. The enable mutation also requires the exact inspected head commit.
+If GitHub rejects enabling auto-merge specifically because the PR is already in
+clean status, the workflow repeats policy and protection verification and checks
+the current head, base, open/clean state, and absence of a reservation before
+merging with an exact-head guard. Other enable errors fail the workflow.
 
 The privileged workflow uses `pull_request_target` only to obtain the write
 permissions unavailable on normal Dependabot PR events. It checks out only the
@@ -477,7 +510,7 @@ scoped zizmor exception for this metadata-only design. Policy regressions run in
 ordinary read-only CI:
 
 ```sh
-node --test .github/scripts/dependabot-policy.test.cjs
+node --test .github/scripts/*.test.cjs
 ```
 
 Repository administrators must finish these settings after the new checks have
@@ -498,10 +531,32 @@ The policy verifies the repository's auto-merge setting and the effective
 rulesets plus any classic branch protection, including all eight named checks and
 strict up-to-date checks, before reserving a merge. Preserve GitGuardian and all
 other existing required checks. If protection cannot be read or is missing, it
-leaves the PR for manual review. Merge queues are not supported by this workflow. No branch-protection, repository-variable, or
-publication setting is changed by the workflow. Disable the enable variable to
-stop new reservations; disable auto-merge on already-reserved PRs separately if
-rolling back.
+rejects the update. On a current-head rejection or verification error (including
+metadata-fetch failure), the workflow revokes an earlier reservation only when
+its ownership can be verified. The reservation's merge commit body contains a
+small policy marker identifying the repository, PR, inspected head, and workflow
+run. Ownership requires both the GitHub Actions bot and a matching originating
+workflow run; this marker remains in the eventual merge commit body. Human,
+unrelated automation, and legacy unmarked reservations are preserved with a
+manual-inspection notice. Failure to read ownership or confirm cancellation
+fails the workflow and requires manual inspection of the PR's auto-merge state.
+
+Runs for one PR are serialized, stale events do not change the current head's
+reservation, and cancellation rechecks the head and reservation immediately
+before writing and verifies the result afterward. GitHub's disable mutation has
+no conditional head/reservation argument, so administrators and other automation
+must avoid changing reservations concurrently with this workflow. A concurrent
+external write between the final read and cancellation cannot be guarded
+atomically by this API.
+
+Merge queues are not supported. No branch-protection, repository-variable, or
+publication setting is changed by the workflow. Disabling
+`GHA_DEPENDABOT_AUTOMERGE_ENABLED` skips the entire job, including cancellation.
+When rolling back, disable auto-merge on already-reserved PRs separately. Also
+inspect reservations manually if the job is skipped (for example after retargeting
+away from `master`), checkout fails, a run is cancelled or times out, or an
+ownership marker's originating run is no longer available. Only the configured
+PR events trigger re-evaluation; settings changes do not trigger it.
 
 ### Release and scheduled maintenance
 
