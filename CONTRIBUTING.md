@@ -108,7 +108,7 @@ repository permissions and does not persist checkout credentials.
 The regular suite excludes `spec/integration/**/*_spec.rb` so its plain Ruby
 checks do not load ActiveSupport. The separate `active-support-timezone` job runs
 on the minimum supported Ruby (currently 3.3), using
-`gemfiles/active_support.gemfile` and its own lockfile. ActiveSupport is an
+`gemfiles/active_support/Gemfile` and its own `Gemfile.lock`. ActiveSupport is an
 optional integration-test dependency; the gem remains usable without Rails or
 ActiveSupport. This job verifies the selected Ruby/ActiveSupport pair; other
 Rails releases and Ruby/ActiveSupport combinations are outside its verified scope.
@@ -189,8 +189,8 @@ the inventory on subsequent runs.
 Run it separately with the same disposable Compose Redis as the regular suite:
 
 ```sh
-docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle install
-docker compose run --rm -e TZ=UTC -e BUNDLE_GEMFILE=gemfiles/active_support.gemfile ruby bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern ''
+docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support/Gemfile ruby bundle install
+docker compose run --rm -e TZ=UTC -e BUNDLE_GEMFILE=gemfiles/active_support/Gemfile ruby bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern ''
 ```
 
 The empty `--exclude-pattern` overrides `.rspec` for this explicit integration

@@ -45,7 +45,7 @@ jobs:
         shell: bash
     env:
       TZ: UTC
-      BUNDLE_GEMFILE: gemfiles/active_support.gemfile
+      BUNDLE_GEMFILE: gemfiles/active_support/Gemfile
       BUNDLE_FROZEN: 'true'
       BUNDLE_PATH: vendor/bundle
       SIMPLECOV_COMMAND_NAME: active-support-timezone

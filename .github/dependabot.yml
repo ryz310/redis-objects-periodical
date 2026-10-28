@@ -1,7 +1,14 @@
 version: 2
 updates:
 - package-ecosystem: bundler
-  directory: "/"
+  directories:
+  - "/"
+  - "/gemfiles/active_support"
+  groups:
+    shared-dependencies:
+      patterns:
+      - "*"
+      group-by: dependency-name
   schedule:
     interval: weekly
     day: monday

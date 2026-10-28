@@ -1,5 +1,0 @@
-# frozen_string_literal: true
-
-# Optional Ruby 3.3 integration target; see README's ActiveSupport version selection policy.
-eval_gemfile '../Gemfile'
-gem 'activesupport', '~> 8.1.4'

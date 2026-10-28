@@ -27,6 +27,35 @@ major updates (7 days by default). Actions updates use a 7-day default cooldown;
 SemVer-specific cooldown settings are not applied to that ecosystem. These
 cooldowns apply to version updates, not security updates.
 
+Bundler updates cover both `/` and `/gemfiles/active_support`. The optional
+integration uses a standard `Gemfile`/`Gemfile.lock` pair so Dependabot can discover
+it. Its Gemfile evaluates the root Gemfile; review shared dependency updates in
+both lockfiles. The `shared-dependencies` rule uses `group-by: dependency-name` to
+combine each dependency's version update across the two directories into one PR,
+while keeping different dependencies in separate PRs. See the
+[Dependabot grouping reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference#group-by-groups).
+Cross-directory grouping applies to version updates; review security updates for
+the same lockfile consistency separately. Keep frozen installs enabled in CI.
+
+Updates that touch the optional lockfile require manual review under the existing
+auto-merge policy, including shared development dependency updates. ActiveSupport
+remains optional, and changes to its selected series follow the
+[version selection policy](../CONTRIBUTING.md#activesupport-version-selection).
+For a manual shared dependency update, update the root constraint/lockfile and
+resolve the optional lockfile with that dependency as the target, for example:
+
+```sh
+docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support/Gemfile ruby bundle lock --update simplecov --conservative
+```
+
+When changing the monitored Bundler directories, let the configuration land on
+`master` before using `@dependabot recreate` on PRs generated under the old
+configuration. Verify that each shared dependency update includes both lockfiles
+and passes the Ruby matrix, timezone inventory, and coverage collation. Recreation
+overwrites manual changes; if Dependabot replaces the old PR with a grouped PR,
+review the replacement. A successful configuration PR alone does not establish
+that the hosted Dependabot update has synchronized both lockfiles.
+
 `dependabot-auto-merge.yml` can reserve auto-merge for a narrow set of updates:
 
 - Bundler patch/minor updates of `pry-byebug`, `rake`, `rspec`,

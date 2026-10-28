@@ -1,5 +1,5 @@
 PATH
-  remote: ..
+  remote: ../..
   specs:
     redis-objects-periodical (0.7.0)
       redis-objects (~> 1.0)
