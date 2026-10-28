@@ -265,6 +265,19 @@ Redis service is accessible only inside its Compose network; no host port is
 published. Do not redirect tests to an existing Redis containing data you want
 to keep.
 
+Development Redis uses
+`redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901`,
+the same immutable image digest as the Redis services in
+[checks.yml](.github/workflows/checks.yml) and [ci.yml](.github/workflows/ci.yml).
+The digest fixes the image contents even if the `latest` tag moves.
+
+To update Redis, review the intended server version and release notes, then
+update the image reference in `docker-compose.yml`, both CI workflows, and this
+paragraph together. Pull the selected image with `docker compose pull redis`,
+recreate the disposable service with `docker compose up -d redis`, and run the
+full specs below. Validate workflow edits with actionlint and zizmor, and check
+the Ruby matrix and optional ActiveSupport job in CI before merging.
+
 Build the development image, start Redis, and install the locked dependencies:
 
 ```sh
