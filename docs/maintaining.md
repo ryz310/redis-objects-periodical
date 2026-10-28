@@ -48,13 +48,13 @@ resolve the optional lockfile with that dependency as the target, for example:
 docker compose run --rm -e BUNDLE_GEMFILE=gemfiles/active_support/Gemfile ruby bundle lock --update simplecov --conservative
 ```
 
-After this configuration lands on `master`, recreate existing Dependabot PRs that
-were generated for the root directory alone. For the SimpleCov update in PR #292,
-use `@dependabot recreate`, then verify that the resulting update includes both
-lockfiles and passes the Ruby matrix, timezone inventory, and coverage collation.
-Recreation overwrites manual changes; if Dependabot replaces the old PR with a
-grouped PR, review the replacement. A successful configuration PR alone does not
-establish that the hosted Dependabot update has synchronized both lockfiles.
+When changing the monitored Bundler directories, let the configuration land on
+`master` before using `@dependabot recreate` on PRs generated under the old
+configuration. Verify that each shared dependency update includes both lockfiles
+and passes the Ruby matrix, timezone inventory, and coverage collation. Recreation
+overwrites manual changes; if Dependabot replaces the old PR with a grouped PR,
+review the replacement. A successful configuration PR alone does not establish
+that the hosted Dependabot update has synchronized both lockfiles.
 
 `dependabot-auto-merge.yml` can reserve auto-merge for a narrow set of updates:
 
