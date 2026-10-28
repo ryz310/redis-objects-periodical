@@ -71,13 +71,17 @@ for (const updateType of ['version-update:semver-major', '', 'unknown']) {
 test('requires every dependency in a grouped update to be allowlisted', () => {
   assert.equal(assessUpdate({ ...lockInput, metadata: { ...metadata, dependencyNames: 'rspec, yard' } }), true);
 });
-for (const filename of ['Gemfile', 'redis-objects-periodical.gemspec', 'gemfiles/active_support.gemfile.lock', 'lib/redis-objects-periodical.rb']) {
+for (const filename of ['Gemfile', 'redis-objects-periodical.gemspec', 'gemfiles/active_support/Gemfile', 'gemfiles/active_support/Gemfile.lock', 'lib/redis-objects-periodical.rb']) {
   test(`rejects manifest, integration, or implementation edits: ${filename}`, () => {
     assert.equal(assessUpdate({ ...lockInput, files: [{ ...lockFile, filename }] }), false);
   });
 }
 test('rejects any additional file, even alongside a valid lockfile change', () => {
   assert.equal(assessUpdate({ ...lockInput, files: [lockFile, { ...lockFile, filename: 'Gemfile' }] }), false);
+});
+test('keeps a shared dependency update in both lockfiles under manual review', () => {
+  const integrationLock = { ...lockFile, filename: 'gemfiles/active_support/Gemfile.lock' };
+  assert.equal(assessUpdate({ ...lockInput, files: [lockFile, integrationLock] }), false);
 });
 for (const name of ['connection_pool', 'redis', 'redis-client', 'redis-objects', 'redis-objects-periodical']) {
   test(`rejects changes to protected runtime entry ${name}`, () => {
