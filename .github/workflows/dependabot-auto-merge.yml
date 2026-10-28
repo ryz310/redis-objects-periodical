@@ -42,7 +42,7 @@ jobs:
         # An earlier metadata failure must still revoke an owned reservation.
         if: ${{ always() && steps.policy_checkout.outcome == 'success' }}
         id: policy
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           METADATA_OUTCOME: ${{ steps.metadata.outcome }}
           ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
