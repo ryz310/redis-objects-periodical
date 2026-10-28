@@ -8,7 +8,8 @@ on:
 
 concurrency:
   group: dependabot-auto-merge-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # Serialize enable/revoke operations; cancellation has no expected-head API guard.
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -24,8 +25,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      actions: read # Verify the originating workflow run of an ownership marker.
     steps:
       - name: Check out trusted base policy only
+        id: policy_checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha }}
@@ -36,34 +39,24 @@ jobs:
         uses: dependabot/fetch-metadata@ffa630c65fa7e0ecfa0625b5ceda64399aea1b36 # v3.0.0
         with:
           github-token: ${{ github.token }}
-      - name: Evaluate update and required checks
+      - name: Reconcile workflow-owned auto-merge
+        # An earlier metadata failure must still revoke an owned reservation.
+        if: ${{ always() && steps.policy_checkout.outcome == 'success' }}
         id: policy
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
+          METADATA_OUTCOME: ${{ steps.metadata.outcome }}
           ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
           UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
           DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
         with:
           script: |
-            const { evaluate } = require('./.github/scripts/dependabot-policy.cjs');
-            try {
-              const safe = await evaluate({ github, context, core, metadata: {
+            const { reconcile } = require('./.github/scripts/dependabot-auto-merge.cjs');
+            await reconcile({ github, context, core,
+              metadataOutcome: process.env.METADATA_OUTCOME,
+              metadata: {
                 ecosystem: process.env.ECOSYSTEM,
                 updateType: process.env.UPDATE_TYPE,
                 dependencyNames: process.env.DEPENDENCY_NAMES || '',
-              }});
-              core.setOutput('safe', safe ? 'true' : 'false');
-              if (!safe) core.notice('Leaving this PR for manual review.');
-            } catch (error) {
-              core.setOutput('safe', 'false');
-              core.warning(`Policy verification failed; leaving this PR for manual review: ${error.message}`);
-            }
-      - name: Reserve auto-merge for this exact head
-        if: ${{ steps.policy.outputs.safe == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: >-
-          gh pr merge --repo "$GITHUB_REPOSITORY" --auto --merge
-          --match-head-commit "$PR_HEAD_SHA" "$PR_NUMBER"
+              },
+            });
