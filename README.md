@@ -261,8 +261,9 @@ Agent workflow, compatibility constraints, and validation rules are documented i
 
 The specs connect to the Compose service at `redis:6379` and run `flushdb` after
 every example. Use a disposable Redis instance dedicated to this checkout. The
-current Compose file publishes host port 6379, which must be available; do not
-redirect tests to an existing Redis containing data you want to keep.
+Redis service is accessible only inside its Compose network; no host port is
+published. Do not redirect tests to an existing Redis containing data you want
+to keep.
 
 Build the development image, start Redis, and install the locked dependencies:
 
@@ -290,8 +291,23 @@ docker compose run --rm ruby bundle exec yardoc
 
 Rebuild the image and run `bundle install` again after dependency changes. Stop
 the development services with `docker compose down`; routine cleanup does not
-require deleting the bundle volume. For parallel checkouts, use distinct Compose
-project names and resolve the fixed host-port conflict before starting Redis.
+require deleting the bundle volume.
+
+For parallel checkouts, choose a distinct Compose project name in each checkout's
+shell before running any of the commands above:
+
+```sh
+# Use a different name in each checkout, for example rop-feature-b in the second.
+export COMPOSE_PROJECT_NAME=rop-feature-a
+```
+
+Keep that name for every Compose command in the same checkout, including
+`docker compose down`. Compose then creates separate Redis services, networks,
+and bundle volumes for each project. Do not give those resources a shared name
+or attach another project's Redis to the test network. Run specs inside the
+`ruby` service so the internal `redis:6379` endpoint resolves to that project's
+disposable Redis. For an interactive Redis client, use
+`docker compose exec redis redis-cli`; host-port publishing is unnecessary.
 
 ### Continuous integration
 
