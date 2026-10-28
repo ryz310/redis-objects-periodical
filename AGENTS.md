@@ -4,8 +4,9 @@
 
 - This Ruby gem extends `redis-objects` with counters, values, sets, and hashes
   for six intervals: annual, monthly, weekly, daily, hourly, and minutely.
-- Read [README.md](README.md) for public usage and development commands. Check
-  implementation and specs before changing behavior.
+- Read [README.md](README.md) for the public entry point, [docs/usage.md](docs/usage.md)
+  for detailed usage, and [CONTRIBUTING.md](CONTRIBUTING.md) for development commands.
+  Check implementation and specs before changing behavior.
 - When a repository's documentation and its existing code disagree, follow the
   conventions used in the existing code, and in your final reply point out each
   inconsistency you found between the documentation and the code.
@@ -29,7 +30,7 @@
   [redis-objects-periodical.gemspec](redis-objects-periodical.gemspec), and
   [Gemfile.lock](Gemfile.lock). CI lives in
   [.github/workflows/](.github/workflows/). External cutover and rollback steps
-  are in [README.md](README.md#circleci-migration-checklist).
+  are in [docs/maintaining.md](docs/maintaining.md#circleci-migration-checklist).
 
 ## Task workflow
 
@@ -65,7 +66,7 @@
 ## Redis and development environment
 
 - Use the Compose `ruby` service for development and the `redis` service for
-  tests. Follow the setup and commands in [README.md](README.md#development).
+  tests. Follow the setup and commands in [CONTRIBUTING.md](CONTRIBUTING.md#development).
 - Specs use real Redis at the hard-coded `redis:6379` address and call `flushdb`
   after every example. Use only the disposable Redis belonging to this checkout;
   never point that hostname at shared or production data. Do not assume setting
@@ -109,8 +110,10 @@
 
 ## Documentation, pull requests, and releases
 
-- Keep user-facing documentation in the English `README.md`; do not create
-  language-specific README copies. Keep agent workflow in this file.
+- Keep the English `README.md` as the public entry point; detailed usage belongs
+  in `docs/usage.md`, contributor procedures in `CONTRIBUTING.md`, and maintainer
+  procedures in `docs/maintaining.md`. Do not create language-specific README
+  copies. Track unresolved work in GitHub Issues and keep agent workflow here.
 - When updating examples, check method names, arguments, key formats, return
   values, and consistency with specs. Resolve references when renaming/removing
   documentation.
@@ -127,4 +130,4 @@
   branch; pushing there or running `rake release` is not routine development.
   Keep version changes, tags, and publishing within that scope. During migration,
   keep the Actions write variables disabled until the corresponding CircleCI
-  writer is stopped; follow the README cutover and rollback checklist.
+  writer is stopped; follow the maintainer guide cutover and rollback checklist.
