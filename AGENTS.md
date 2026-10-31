@@ -129,5 +129,5 @@
 - Releases require an explicit release task. The publisher uses the `release`
   branch; pushing there or running `rake release` is not routine development.
   Keep version changes, tags, and publishing within that scope. During migration,
-  keep the Actions write variables disabled until the corresponding CircleCI
-  writer is stopped; follow the maintainer guide cutover and rollback checklist.
+  stop the corresponding CircleCI writer before activating Actions publication
+  or scheduled writes; follow the maintainer guide cutover and rollback checklist.
