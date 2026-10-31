@@ -14,7 +14,7 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
       # Define a new list.  It will function like a regular instance
       # method, so it can be used alongside ActiveRecord, DataMapper, etc.
       def #{periodical}_set(name, options = {})
-        redis_objects[name.to_sym] = options.merge(type: :set)
+        redis_objects[name.to_sym] = options.merge(type: :set, periodical: :#{periodical})
 
         mod = Module.new do
           define_method(name) do

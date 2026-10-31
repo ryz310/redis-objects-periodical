@@ -11,7 +11,7 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
 
     module ClassMethods
       def #{periodical}_value(name, options = {})
-        redis_objects[name.to_sym] = options.merge(:type => :value)
+        redis_objects[name.to_sym] = options.merge(type: :value, periodical: :#{periodical})
 
         mod = Module.new do
           define_method(name) do

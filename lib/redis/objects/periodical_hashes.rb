@@ -14,7 +14,7 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
       # Define a new hash key.  It will function like a regular instance
       # method, so it can be used alongside ActiveRecord, DataMapper, etc.
       def #{periodical}_hash_key(name, options = {})
-        redis_objects[name.to_sym] = options.merge(type: :dict)
+        redis_objects[name.to_sym] = options.merge(type: :dict, periodical: :#{periodical})
 
         mod = Module.new do
           define_method(name) do

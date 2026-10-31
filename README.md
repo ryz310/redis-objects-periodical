@@ -26,6 +26,11 @@ Add this line to your application's Gemfile:
 gem 'redis-objects-periodical'
 ```
 
+The gem accepts `redis-objects >= 1, < 3`. Development and CI lock
+redis-objects 2.0.0. When upgrading from 1.x, review the
+[compatibility, key-prefix, and migration notes](docs/usage.md#redisobjects-compatibility),
+including connection setup, lock declarations, and existing Redis keys.
+
 ## Quick start
 
 Configure the Redis connection as described in
