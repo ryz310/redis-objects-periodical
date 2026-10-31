@@ -39,6 +39,63 @@ The `global: true` option also supports class-level fields, as in
 `daily_counter :pv, global: true`. Standard Redis::Objects operations remain
 available on each periodical object.
 
+## Redis::Objects compatibility
+
+The gem accepts `redis-objects >= 1, < 3`. The development and optional
+ActiveSupport lockfiles select 2.0.0. Redis::Objects 2.x requires the `redis` Ruby
+client gem `~> 5.0`; applications pinned to an older client must resolve that
+dependency before upgrading.
+
+When upgrading an application from redis-objects 1.x, also review the upstream
+[2.0 README](https://github.com/nateware/redis-objects/blob/v2.0.0/README.md) and
+[changelog](https://github.com/nateware/redis-objects/blob/v2.0.0/CHANGELOG.rdoc):
+
+- Configure the connection explicitly with `Redis::Objects.redis = Redis.new(...)`
+  or a supported connection pool. The `Redis.current` fallback was removed in
+  2.0.0, although the upstream README still describes it.
+- Rename model-level `lock :name` declarations to `redis_lock :name`.
+  A lock object's `.lock` method remains available.
+- For sets, including periodical sets, `add(nil)` now adds an empty string.
+  With `marshal: true`, this changes a stored member from `nil` to `""`.
+- If the application also uses ordinary `Redis::List` objects, `pop(n)` returns
+  multiple elements in reverse order compared with 1.x. Multi-element `pop`
+  and `shift` now use Redis commands requiring server version 6.2 or later.
+
+### Key prefixes in redis-objects 2.x
+
+Redis::Objects 2.x adds `Redis::Objects.prefix_style`, defaulting to `:legacy`.
+Set it before the first key is generated:
+
+```ruby
+require 'redis-objects-periodical'
+
+Redis::Objects.prefix_style = :modern
+```
+
+Periodical fields use the prefix selected by Redis::Objects and append the
+same period suffix in either mode. For example, a `daily_counter :metric` on
+`ResearchMigration::Entry0` with ID `7` uses these keys on 2026-10-31:
+
+| Setting | Key |
+| --- | --- |
+| `:legacy` | `entry0:7:metric:2026-10-31` |
+| `:modern` | `research_migration__entry0:7:metric:2026-10-31` |
+
+This applies to all six periods and four types, including global fields (whose
+ID component is empty). Top-level class prefixes remain the same in both modes.
+Explicit `redis_prefix=`, field `key:`, and standalone constructor keys retain
+their specified values. The setting also affects ordinary Redis::Objects fields.
+
+The upstream class prefix is cached after first use, so changing `prefix_style`
+later does not automatically change that class's keys. An existing periodical
+object also keeps its original key. Configure the style consistently at startup.
+
+Switching to `:modern` does not move existing data or fall back to legacy keys.
+In 2.0.0, do not run the upstream `migrate_redis_legacy_keys` helper on models
+with periodical fields: it drops period suffixes and can overwrite multiple
+periods into one key. Retain `:legacy` for existing data until a migration that
+preserves period suffixes and prevents overwrites has been planned separately.
+
 ## Periods and key formats
 
 Combine any prefix below with `counter`, `value`, `set`, or `hash_key`.

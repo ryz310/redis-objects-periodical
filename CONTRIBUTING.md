@@ -89,6 +89,13 @@ and each build verifies that the gem includes every Ruby source under `lib/`.
 policy without API writes (`dependabot-policy`), and runs an isolated optional
 ActiveSupport integration job on Ruby 3.3 (`active-support-timezone`).
 
+Both lockfiles select redis-objects 2.0.0. The regular suite therefore includes
+96 key-prefix examples: legacy/modern x six periods x four types x instance/global
+fields. They check literal expected keys and persisted Redis entries, using a
+fresh namespaced model per example and restoring the global prefix style afterward.
+These examples are excluded when running with redis-objects below 2.0.0; the
+gemspec still permits 1.x, but the locked CI matrix exercises 2.0.0.
+
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,
 built gems, and YARD documentation. Test results and available coverage are saved
