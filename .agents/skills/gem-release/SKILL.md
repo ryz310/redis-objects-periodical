@@ -1,6 +1,6 @@
 ---
 name: gem-release
-description: Prepare, review, resume, or publish a redis-objects-periodical gem release using gem_comet and the configured release workflow, ending a full release with a GitHub Release draft. Use for this repository's releases; ordinary dependency maintenance is outside this skill.
+description: Prepare, review, or resume a redis-objects-periodical gem release using the gem_comet CLI. Leave Update and Release PRs unmerged unless the user explicitly authorizes their merges; finish an explicitly authorized publication with a GitHub Release draft. Ordinary dependency maintenance is outside this skill.
 ---
 
 # Gem release
@@ -28,16 +28,24 @@ Derive versions, supported Rubies, checks, and paths from these sources rather
 than copying a previous release's values. `.gem_comet.yml`'s `version` is a
 configuration schema version, not the gem or installed tool version.
 
-Determine whether the request authorizes preparation, merging, or publication.
-Starting a release normally prepares update and release PRs for review, leaving
-both unmerged and without auto-merge. Merging into the configured publication
-branch can publish a gem. A full authorized release ends with an unpublished
-GitHub Release draft; publishing that draft is a separate action.
+Prepare `Update vVERSION` and `Release vVERSION` PRs for review and leave both
+unmerged, without auto-merge or merge-queue enrollment. Requests such as "use
+the skill to release", "start the release", or "resume" do not authorize either
+PR's merge. Passing CI, CHANGELOG approval, and confirmation of credentials or
+publisher setup do not supply that authorization either.
 
-Reuse existing authorization. This skill adds no blanket approval requirement.
-Return unresolved version, compatibility, migration, or external configuration
-decisions to the user. Creating a skill, researching changes, or merging
-Dependabot updates does not authorize gem publication.
+Merge only after a direct user instruction explicitly covers the relevant PR
+or merge stage. Approval to merge the Update PR does not authorize merging the
+Release PR. A single explicit instruction covering both stages is sufficient;
+reuse that authorization without asking again unless its scope changes. Do not
+use a workflow dispatch or local publishing command to bypass the merge gate.
+
+Merging the Release PR into the configured publication branch can publish a gem.
+After that explicitly authorized publication, finish with an unpublished GitHub
+Release draft. Publishing the draft is a separate action. Return unresolved
+version, compatibility, migration, or external configuration decisions to the
+user. Creating a skill or merging Dependabot updates does not authorize release
+PR merges or gem publication.
 
 ## Immediate credential gate
 
@@ -80,9 +88,15 @@ prerequisites needed for the requested scope.
 
 Read [execution and recovery](references/execution-and-recovery.md) before
 setting up tools or making external changes. Inspect installed gem_comet and
-pr_comet behavior before running `gem_comet changelog` or
-`gem_comet release VERSION`; do not discover prerequisites through a full run.
-An unrestricted dependency update is not implied by release preparation.
+pr_comet behavior, then use the actual `gem_comet changelog` and
+`gem_comet release VERSION` CLI commands. Calling `GemComet::Release.call` or
+other internal Ruby services is not a substitute for CLI execution. Do not
+monkey-patch the tool's release stages or generator to simulate that execution.
+An unrestricted dependency update is not implied by release preparation. If
+the supported CLI/configuration cannot satisfy the requested constraints,
+explain the limitation and obtain the user's decision before mutation rather
+than silently replacing the CLI. Follow the
+[CLI and generation-history procedure](references/execution-and-recovery.md#cli-and-generation-history).
 
 - Update the configured version source and the path-gem entry in **both**
   tracked lockfiles, currently `Gemfile.lock` and
@@ -90,10 +104,20 @@ An unrestricted dependency update is not implied by release preparation.
   Preserve unrelated versions, constraints, platforms, and Bundler settings.
   Keep ActiveSupport optional and outside runtime dependencies.
 - Compile CHANGELOG only for this release, using AGENTS.md and the configured
-  categories/order. Omit empty categories, use `-` bullets, combine repeated
-  dependency bumps, retain PR links, and explain backward-incompatible behavior.
-  Supplement generated output when squash merges or compatibility notes are
-  missing. Preserve previous release entries.
+  categories/order. Preserve the CLI-generated CHANGELOG commit unchanged, then
+  make editorial corrections in a separate follow-up commit. Do not substitute
+  pre-edited text before the tool's first commit or amend/squash that evidence.
+  Omit empty categories, use `-` bullets, explain backward-incompatible behavior,
+  and supplement missing squash merges or migration notes. Preserve previous
+  release entries.
+- For repeated Dependabot updates to the same dependency, retain only its final
+  update PR. Use that PR's old/new versions and established contributor
+  attribution, in the form `- [#N](URL) Bump name from OLD to NEW ([@user](URL))`.
+  Do not enumerate intermediate PRs or replace OLD with the version at the start
+  of the entire release interval. If a grouped PR title omits versions, verify
+  them in its body/diff. Keep consecutive bullet items together with no blank
+  lines between them; retain a blank line after the heading and before the next
+  category.
 - Use English PR titles/bodies with `Purpose of this change`. Explain version
   choice, compatibility/migrations, dependency scope, checks, and merge order:
   update PR into `master`, then `master` into `release`, as configured.
@@ -125,24 +149,32 @@ packaging policy during a release. Report unexpected package contents.
 
 Review the final diff and whitespace, both lockfiles, exact head checks, and
 remaining findings. Distinguish successful coverage collation from an actual
-Qlty upload. Preparation-only work ends with PR URLs and verification results.
+Qlty upload. Report the actual CLI commands/tool versions, generated CHANGELOG
+commit, editorial follow-up commits, PR URLs, and validation. Do not describe
+an internal API invocation as standard CLI execution. Without explicit merge
+instructions, end with both PRs unmerged and a concrete review handoff.
 
 ## Merge and publish within authorization
 
-1. Recheck the update PR's head, diff, reviews, base, and required checks. Merge
-   with the inspected head as a guard, then verify master integration.
+1. Confirm a direct user instruction authorizes the Update PR's merge. If none
+   exists, leave it open and report readiness. With authorization, recheck its
+   head, diff, reviews, base, and required checks; merge with an expected-head
+   guard and verify master integration. Do not infer Release PR merge approval
+   from this stage's approval or successful integration.
 2. Verify the release PR includes the intended version/CHANGELOG and current
    release workflow. Recheck its updated head and CI after the update PR merges;
    inspect the full delta against the publication branch, including any old
-   CircleCI configuration. Never bypass protection.
+   CircleCI configuration. Never bypass protection. Without a direct instruction
+   authorizing this Release PR's merge, leave it open even when all checks pass.
 3. Before publication, verify `GHA_RELEASE_ENABLED=true`, the matching protected
    `release` environment and RubyGems Trusted Publisher, and that the old
    CircleCI publisher is stopped and drained. Follow the migration checklist;
    do not infer cutover from removed configuration. Missing or unverifiable
    prerequisites block publication, not offline assessment. Do not enable
    variables, edit protection, or revive a publisher outside authorized scope.
-4. Merge the exact inspected release PR head only when publication is authorized.
-   Observe the resulting run. Do not also dispatch a duplicate run or invoke
+4. With explicit authorization to merge the Release PR, recheck that the
+   instruction still covers its current contents, then merge its exact inspected
+   head. Observe the resulting run. Do not also dispatch a duplicate run or invoke
    local `rake release`. A skipped publishing job is not a successful release.
 5. Verify the workflow, tag's peeled commit SHA, RubyGems metadata and checksum,
    and downloaded package contents against the intended tested commit. Inspect

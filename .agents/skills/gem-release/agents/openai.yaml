@@ -1,4 +1,4 @@
 interface:
   display_name: "Gem Release"
-  short_description: "Prepare and resume redis-objects-periodical releases"
-  default_prompt: "Use $gem-release to prepare or resume a redis-objects-periodical release within the authorized scope."
+  short_description: "Prepare releases with gem_comet CLI and merge approval"
+  default_prompt: "Use $gem-release to prepare or resume a redis-objects-periodical release with the gem_comet CLI. Leave Update and Release PRs unmerged unless I explicitly authorize their merges."
