@@ -44,7 +44,7 @@ jobs:
 
   challenge:
     if: >-
-      ${{ vars.GHA_CHALLENGE_ENABLED == 'true' && github.ref == 'refs/heads/master' &&
+      ${{ github.ref == 'refs/heads/master' &&
           (github.event_name == 'schedule' || !inputs.dry-run) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20

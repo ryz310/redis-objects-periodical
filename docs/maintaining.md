@@ -142,41 +142,63 @@ PR events trigger re-evaluation; settings changes do not trigger it.
 
 ## Release and scheduled maintenance
 
-`release.yml` is prepared for RubyGems Trusted Publishing. It remains disabled
-unless the repository variable `GHA_RELEASE_ENABLED` is exactly `true`. Once
-enabled, only pushes or manual dispatches on `release` can publish. The workflow
+`release.yml` uses RubyGems Trusted Publishing. Only pushes or manual dispatches
+on `release` can publish; no repository enable variable is required. The workflow
 reruns all three Ruby checks and RuboCop against the triggering commit, then
 publishes that same commit using Ruby 3.3 and Bundler 4.0.23. YARD and Qlty do not
 gate publishing. The publishing job uses fresh dependencies without caches,
 checks for an existing version tag or published version, and is not cancelled by
 a newer run. Do not run a real release as a migration test.
 
-Before enabling publishing, register this gem's Trusted Publisher on RubyGems.org
+Before the first publish, register this gem's Trusted Publisher on RubyGems.org
 with owner `ryz310`, repository `redis-objects-periodical`, workflow filename
 `release.yml`, and environment `release`. Create the matching GitHub environment,
 restrict it to the `release` branch, and configure its protection rules. The
 publishing job alone receives `contents: write` and `id-token: write`; it does not
 use `RUBYGEMS_API_KEY`. See the [RubyGems Trusted Publishing guide](https://guides.rubygems.org/trusted-publishing/).
 
-`rubocop_challenge.yml` preserves the daily 08:30 JST schedule. Remote writes
-remain disabled unless the repository variable `GHA_CHALLENGE_ENABLED` is exactly
-`true`. Manual dispatch on `master` defaults to a read-only dry run using
+`rubocop_challenge.yml` runs daily at 08:30 JST on `master` without a repository
+enable variable. Manual dispatch on `master` defaults to a read-only dry run using
 `--no-create-pr`. The CLI requires a token even for a dry run, so that job uses
-the automatic read-only `GITHUB_TOKEN` and does not need the enable variable.
+the automatic read-only `GITHUB_TOKEN`.
 Actual PR creation uses `GITHUB_TOKEN` with job-scoped `contents: write` and
 `pull-requests: write`. Enable **Allow GitHub Actions to create and approve pull
-requests** in the repository's Actions settings before enabling it. Check the
+requests** in the repository's Actions settings before PR creation. Check the
 created PR's CI and approve pending workflow runs if required; PR creation alone
 does not prove CI ran. Scheduled workflows run on the default branch, may be
 delayed, and can be disabled after 60 days without public repository activity.
+
+### Resume a release after removing the enable variables
+
+1. Stop and drain the old CircleCI publisher, and confirm the Trusted Publisher
+   and GitHub `release` environment described above are configured. Inspect the
+   intended version's Git tag and RubyGems version before continuing. If either
+   already exists, investigate the partial release instead of retrying blindly.
+2. Merge the workflow fix into `master` after its PR checks pass. This restores
+   the Challenge schedule on `master`; it does not update the release workflow
+   on the `release` branch.
+3. Open and review a PR from `master` to `release`. Confirm its complete diff
+   contains only the changes intended for this release. Merging this PR pushes
+   to `release` and starts publication automatically, so merge only when ready
+   to publish. No enable variable or additional manual dispatch is needed.
+4. Follow the new Release run. It must pass the three Ruby builds and RuboCop
+   before `publish` starts. Approve the `release` environment deployment if its
+   configured protection rules require approval. Confirm the version tag and
+   published RubyGems version after the job succeeds.
+
+If the fixed workflow is already on `release` and no publish is in progress,
+manual dispatch of **Release** with branch **release** starts a new release run.
+Do not re-run the old skipped run: [a re-run uses its original commit](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
+and still contains the removed conditions. Dispatching on `master` cannot publish.
 
 ## CircleCI migration checklist
 
 The CircleCI configuration and badge have been removed. Repository administrators
 must complete the external settings below; removing a file does not update branch
 protection, stop already queued jobs, or disable workflows still present on the
-old `release` branch. Both `GHA_RELEASE_ENABLED` and `GHA_CHALLENGE_ENABLED` must
-stay unset or `false` until the corresponding CircleCI writer is stopped.
+old `release` branch. Stop each CircleCI writer before activating the matching
+Actions workflow. The Challenge schedule becomes active when its workflow is on
+`master`; publication starts on a push or manual dispatch on `release`.
 
 1. Verify Actions on a normal PR, a fork PR, and a Dependabot PR. Check all three
    Ruby builds, RuboCop, YARD, JUnit artifacts, and the three-input coverage merge.
@@ -193,19 +215,22 @@ stay unset or `false` until the corresponding CircleCI writer is stopped.
    YARD, coverage, and unrelated protections required. Update protection only
    after the new checks have run successfully.
 3. Prepare the Trusted Publisher and protected `release` environment. Stop and
-   drain CircleCI publishing before setting `GHA_RELEASE_ENABLED=true`. Run the
-   first real publish only as an explicitly requested release task; first
-   inspect existing tags and RubyGems versions, including any partial release.
-4. Run the Challenge dry run. Stop and drain the CircleCI Challenge schedule
-   before setting `GHA_CHALLENGE_ENABLED=true`. Check an actual generated PR and
-   its CI before considering this step complete.
+   drain CircleCI publishing before pushing the release workflow to `release`.
+   Run the first real publish only as an explicitly requested release task;
+   first inspect existing tags and RubyGems versions, including any partial release.
+4. Stop and drain the CircleCI Challenge schedule before merging the Actions
+   Challenge workflow into `master`. Run the Challenge dry run, then check an
+   actual generated PR and its CI before considering this step complete.
 5. Stop the CircleCI project and confirm no queued or running jobs remain. Remove
    obsolete CircleCI credentials and integration only after confirming they are
    not shared with other projects. Keep the migration commit available for
    restoring the previous configuration if needed.
 
-For rollback, disable the Actions write variables and drain any running jobs
-before restoring the corresponding CircleCI writer. Restore previously recorded
+For rollback, [disable the corresponding Actions workflow](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows)
+in the repository's Actions UI (or use `gh workflow disable release.yml` or
+`gh workflow disable rubocop_challenge.yml`) and wait for any running writes to
+finish before restoring the corresponding CircleCI writer. Inspect any partial
+publication before proceeding. Restore previously recorded
 required checks together with the previous CircleCI configuration and keep at
 least one complete CI path active. Never enable both
 publishers or both Challenge writers at once. Do not delete existing release tags

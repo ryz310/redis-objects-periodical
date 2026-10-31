@@ -14,13 +14,12 @@ permissions:
 
 jobs:
   checks:
-    # Keep CircleCI as the publisher until the documented cutover is complete.
-    if: ${{ vars.GHA_RELEASE_ENABLED == 'true' && github.ref == 'refs/heads/release' }}
+    if: ${{ github.ref == 'refs/heads/release' }}
     uses: ./.github/workflows/checks.yml
 
   publish:
     needs: checks
-    if: ${{ vars.GHA_RELEASE_ENABLED == 'true' && github.ref == 'refs/heads/release' }}
+    if: ${{ github.ref == 'refs/heads/release' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: release
