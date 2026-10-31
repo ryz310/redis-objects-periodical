@@ -95,11 +95,14 @@ fields. They check literal expected keys and persisted Redis entries, using a
 fresh namespaced model per example and restoring the global prefix style afterward.
 These examples run unconditionally in the locked 2.0.0 CI environment, so a
 missing `prefix_style` API fails the suite instead of silently excluding coverage.
-The gemspec still permits 1.x. When checking a separately prepared 1.x bundle,
-run the compatible specs explicitly, excluding the 2.x configuration spec:
+The migration suite additionally covers all period/type/global combinations,
+payload and TTL preservation, collisions and retries, cached prefixes, and field
+connections. Both suites require the 2.x API. The gemspec still permits 1.x;
+when checking a separately prepared 1.x bundle, exclude these two specs:
 
 ```sh
-docker compose run --rm ruby bundle exec rspec spec/lib/redis --exclude-pattern spec/lib/redis/objects_prefix_style_spec.rb
+docker compose run --rm ruby bundle exec rspec spec/lib/redis \
+  --exclude-pattern 'spec/lib/redis/objects_{prefix_style,migrate_redis_legacy_keys}_spec.rb'
 ```
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow

@@ -91,10 +91,57 @@ later does not automatically change that class's keys. An existing periodical
 object also keeps its original key. Configure the style consistently at startup.
 
 Switching to `:modern` does not move existing data or fall back to legacy keys.
-In 2.0.0, do not run the upstream `migrate_redis_legacy_keys` helper on models
-with periodical fields: it drops period suffixes and can overwrite multiple
-periods into one key. Retain `:legacy` for existing data until a migration that
-preserves period suffixes and prevents overwrites has been planned separately.
+The upstream 2.0.0 `migrate_redis_legacy_keys` helper drops period suffixes.
+After requiring this gem, that method is overridden to retain the complete key
+after its automatic class prefix, including minute suffixes containing `:`.
+
+### Migrating existing keys with redis-objects 2.x
+
+Run the migration once per model whose automatic prefix occurs in stored keys,
+while `prefix_style` is still `:legacy`. Pause application reads and writes for
+the migration and style switch, and back up the data before starting. Load the
+application's model declarations before running these commands:
+
+```ruby
+require 'redis-objects-periodical'
+
+Redis::Objects.redis = Redis.new(url: ENV.fetch('REDIS_URL'))
+Redis::Objects.prefix_style = :legacy
+ResearchMigration::Entry0.migrate_redis_legacy_keys
+Redis::Objects.prefix_style = :modern
+```
+
+For example, the two keys `entry0:7:metric:2026-10-30` and
+`entry0:7:metric:2026-10-31` become
+`research_migration__entry0:7:metric:2026-10-30` and
+`research_migration__entry0:7:metric:2026-10-31`. Their Redis types, values, and
+expiration times are preserved. The optional positional arguments retain the
+upstream signature: `migrate_redis_legacy_keys(scan_count = 10, verbose = false)`.
+
+The override scans the model's automatic fields, including inherited declarations,
+ordinary Redis::Objects fields, and global fields, on each field's configured
+connection. If inherited fields also use a parent model's prefix, migrate that
+parent model as well.
+Explicit model prefixes and field `key:` options are unchanged in either style,
+so their keys are not renamed. Keys that do not match a declared automatic field
+are left alone.
+
+Each rename uses an atomic Redis script with `RENAMENX` to avoid overwriting an
+existing destination. A collision raises
+`Redis::Objects::PeriodicalKeyMigration::Conflict`, leaving that source and
+destination intact. Earlier successful renames are not rolled back. Keep traffic
+paused, resolve the conflicting destination, and rerun the migration before
+switching all application processes to `:modern`. The Redis connection needs
+permission to run `SCAN`, `EVAL`, `EXISTS`, and `RENAMENX`.
+
+Successful migration clears the model's cached automatic prefix, allowing the
+subsequent style switch to take effect. Existing periodical objects still retain
+their old keys; recreate them or restart application processes before resuming.
+Calling the migration while already configured as `:modern` raises an error.
+
+If different classes already share a legacy prefix and indistinguishable keys,
+the owning class cannot be recovered from those keys. Resolve that ownership
+before migration; this helper cannot separate data that has already collided.
 
 ## Periods and key formats
 

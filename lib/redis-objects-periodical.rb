@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'redis-objects'
+require 'redis/objects/periodical_key_migration'
 
 class Redis
   PERIODICALS = %w[daily weekly monthly annual hourly minutely].freeze
