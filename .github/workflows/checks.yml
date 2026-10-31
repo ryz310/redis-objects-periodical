@@ -1,0 +1,124 @@
+name: Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build_on_ruby_${{ matrix.ruby }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.3', '3.4', '4.0']
+    container:
+      image: cimg/ruby:${{ matrix.ruby }}
+      options: --user 0
+    services:
+      redis:
+        image: redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUNDLE_FROZEN: 'true'
+      BUNDLE_PATH: vendor/bundle
+      SIMPLECOV_COMMAND_NAME: ruby-${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install locked dependencies
+        run: |
+          # cimg's Bash HOME differs from the checkout action's temporary HOME.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
+          gem install bundler -v 4.0.23 --no-document
+          bundle _4.0.23_ install
+
+      - name: Execute RSpec
+        run: |
+          mkdir -p test-results
+          bundle exec rspec --format documentation \
+                            --format RspecJunitFormatter \
+                            --out test-results/rspec.xml
+
+      - name: Build gem
+        run: bundle exec rake build
+
+      - name: Verify packaged Ruby sources
+        run: |
+          bundle exec ruby -rrubygems/package -e '
+            package = Gem::Package.new(Dir["pkg/*.gem"].fetch(0)).spec
+            sources = Dir["lib/**/*.rb"]
+            missing = sources - package.files
+            abort("Missing packaged sources: #{missing.join(", ")}") unless missing.empty?
+            puts "Verified #{sources.length} Ruby sources in #{package.full_name}"
+          '
+
+      - name: Prepare coverage merge input
+        if: ${{ always() && hashFiles('coverage/.resultset.json') != '' }}
+        run: cp coverage/.resultset.json coverage/resultset.json
+
+      - name: Store coverage merge input
+        if: ${{ always() && hashFiles('coverage/resultset.json') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: simplecov-ruby-${{ matrix.ruby }}
+          path: coverage/resultset.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Store test results and coverage
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: test-results-ruby-${{ matrix.ruby }}
+          path: |
+            test-results/
+            coverage/
+          retention-days: 14
+
+      - name: Store gem
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gem-ruby-${{ matrix.ruby }}
+          path: pkg/*.gem
+          if-no-files-found: error
+          retention-days: 14
+
+  rubocop:
+    name: rubocop
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: cimg/ruby:3.3
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUNDLE_FROZEN: 'true'
+      BUNDLE_PATH: vendor/bundle
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install locked dependencies
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
+          gem install bundler -v 4.0.23 --no-document
+          bundle _4.0.23_ install
+      - name: Run RuboCop
+        run: bundle exec rubocop

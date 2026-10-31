@@ -1,11 +1,24 @@
 version: 2
 updates:
 - package-ecosystem: bundler
-  directory: "/"
+  directories:
+  - "/"
+  - "/gemfiles/active_support"
+  groups:
+    shared-dependencies:
+      patterns:
+      - "*"
+      group-by: dependency-name
   schedule:
-    interval: daily
+    interval: weekly
+    day: monday
     time: "08:00"
-    timezone: Japan
+    timezone: Asia/Tokyo
+  cooldown:
+    default-days: 7
+    semver-major-days: 14
+    semver-minor-days: 7
+    semver-patch-days: 3
   open-pull-requests-limit: 10
   reviewers:
   - ryz310
@@ -17,3 +30,19 @@ updates:
   - dependency-name: simplecov
     versions:
     - ">= 0.19.a, < 0.20"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: monday
+    time: "08:00"
+    timezone: Asia/Tokyo
+  cooldown:
+    default-days: 7
+  open-pull-requests-limit: 10
+  reviewers:
+  - ryz310
+  assignees:
+  - ryz310
+  labels:
+  - dependabot

@@ -1,0 +1,71 @@
+name: Rubocop Challenge
+
+on:
+  schedule:
+    - cron: '30 23 * * *' # 08:30 JST every day
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Check the challenge without pushing a branch or creating a PR'
+        type: boolean
+        default: true
+
+concurrency:
+  group: rubocop-challenge
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  dry_run:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
+        with:
+          ruby-version: '3.3'
+          bundler: '4.0.23'
+          bundler-cache: false
+      - name: Install dependencies and Challenger
+        run: |
+          bundle install
+          gem install rubocop_challenger --no-document
+      - name: Run without remote writes
+        # PrComet checks for a token even when --no-create-pr skips remote writes.
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ github.token }}
+        run: rubocop_challenger go --email=ryz310@gmail.com --name=ryz310 --no-create-pr
+
+  challenge:
+    if: >-
+      ${{ vars.GHA_CHALLENGE_ENABLED == 'true' && github.ref == 'refs/heads/master' &&
+          (github.event_name == 'schedule' || !inputs.dry-run) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # PrComet authenticates its push using GITHUB_ACCESS_TOKEN below.
+          persist-credentials: false
+      - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
+        with:
+          ruby-version: '3.3'
+          bundler: '4.0.23'
+          bundler-cache: false
+      - name: Install dependencies and Challenger
+        run: |
+          bundle install
+          gem install rubocop_challenger --no-document
+      - name: Create challenge PR
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ github.token }}
+        run: rubocop_challenger go --email=ryz310@gmail.com --name=ryz310

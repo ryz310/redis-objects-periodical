@@ -67,6 +67,19 @@ RSpec.describe Redis::WeeklyCounter do
       expect(homepage.redis.get('homepage:1:pv:2021W14').to_i).to eq 11
       expect(homepage.redis.get('homepage:1:pv:2021W15').to_i).to eq 12
     end
+
+    context 'when the new year arrives' do
+      before do
+        Timecop.travel(Time.local(2021, 12, 31))
+        homepage.pv.increment(10)
+        Timecop.travel(Time.local(2022, 1, 1))
+        homepage.pv.increment(11)
+      end
+
+      it 'appends counter with the same week' do
+        expect(homepage.redis.get('homepage:1:pv:2021W52').to_i).to eq 21
+      end
+    end
   end
 
   describe '#value' do

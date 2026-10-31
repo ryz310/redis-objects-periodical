@@ -46,5 +46,5 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
       end
     end
   RUBY
-  Redis::Objects.const_set("#{periodical.capitalize}Hashes", new_module)
+  Redis::Objects.const_set(:"#{periodical.capitalize}Hashes", new_module)
 end

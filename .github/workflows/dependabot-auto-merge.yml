@@ -1,0 +1,61 @@
+name: Dependabot Auto Merge
+
+on:
+  # Metadata only: never check out or execute the PR head in this privileged job.
+  # Required for a write token on Dependabot events; only the trusted base policy runs.
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  # Serialize enable/revoke operations; cancellation has no expected-head API guard.
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  enable:
+    if: >-
+      ${{ github.event.pull_request.user.login == 'dependabot[bot]' &&
+          github.event.pull_request.base.ref == 'master' &&
+          github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read # Verify the originating workflow run of an ownership marker.
+    steps:
+      - name: Check out trusted base policy only
+        id: policy_checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ github.token }}
+      - name: Reconcile workflow-owned auto-merge
+        # An earlier metadata failure must still revoke an owned reservation.
+        if: ${{ always() && steps.policy_checkout.outcome == 'success' }}
+        id: policy
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          METADATA_OUTCOME: ${{ steps.metadata.outcome }}
+          ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+        with:
+          script: |
+            const { reconcile } = require('./.github/scripts/dependabot-auto-merge.cjs');
+            await reconcile({ github, context, core,
+              metadataOutcome: process.env.METADATA_OUTCOME,
+              metadata: {
+                ecosystem: process.env.ECOSYSTEM,
+                updateType: process.env.UPDATE_TYPE,
+                dependencyNames: process.env.DEPENDENCY_NAMES || '',
+              },
+            });

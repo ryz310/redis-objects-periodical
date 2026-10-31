@@ -65,13 +65,27 @@ RSpec.describe Redis::WeeklyHashKey do
   end
 
   describe 'keys' do
-    it 'appends new counters automatically with the current year' do
+    it 'appends new hashes automatically with the current year' do
       expect(homepage.redis.hgetall('homepage:1:browsing_history:2021W13'))
         .to eq({ 'item1' => '1.5', 'item2' => '2' })
       expect(homepage.redis.hgetall('homepage:1:browsing_history:2021W14'))
         .to eq({ 'item1' => '3', 'item2' => 'a', 'item3' => '5' })
       expect(homepage.redis.hgetall('homepage:1:browsing_history:2021W15'))
         .to eq({ 'item2' => '1', 'item3' => '2', 'item4' => '1' })
+    end
+
+    context 'when the new year arrives' do
+      before do
+        Timecop.travel(Time.local(2021, 12, 31))
+        homepage.browsing_history.bulk_set('item1' => 1)
+        Timecop.travel(Time.local(2022, 1, 1))
+        homepage.browsing_history.bulk_set('item2' => 2)
+      end
+
+      it 'appends hash with the same week' do
+        expect(homepage.redis.hgetall('homepage:1:browsing_history:2021W52'))
+          .to eq({ 'item1' => '1', 'item2' => '2' })
+      end
     end
   end
 

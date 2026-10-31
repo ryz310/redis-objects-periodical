@@ -1,0 +1,191 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master, release]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependabot_policy:
+    name: dependabot-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test auto-merge policy without API writes
+        run: node --test .github/scripts/*.test.cjs
+
+  active_support_timezone:
+    name: active-support-timezone
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: cimg/ruby:3.3
+      options: --user 0
+    services:
+      redis:
+        image: redis:latest@sha256:97ec88159e6d7cfb5ddef9015386087d58a912de80112f06ebdfa78fa5989901
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      TZ: UTC
+      BUNDLE_GEMFILE: gemfiles/active_support/Gemfile
+      BUNDLE_FROZEN: 'true'
+      BUNDLE_PATH: vendor/bundle
+      SIMPLECOV_COMMAND_NAME: active-support-timezone
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install locked optional integration dependencies
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
+          gem install bundler -v 4.0.23 --no-document
+          bundle _4.0.23_ install
+      - name: Verify real ActiveSupport timezone behavior in a separate process
+        run: |
+          mkdir -p test-results
+          bundle exec rspec spec/integration/redis/recurring_at_intervals_spec.rb --exclude-pattern '' \
+            --format RspecJunitFormatter --out test-results/active-support.xml \
+            --format json --out test-results/active-support.json
+      - name: Verify every intended timezone example passed
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { readFileSync } = require('node:fs');
+            const { validateInventory } = require('./.github/scripts/timezone-inventory.cjs');
+            const report = JSON.parse(readFileSync('test-results/active-support.json', 'utf8'));
+            core.info(`Verified ${validateInventory(report)} passed timezone integration examples`);
+      - name: Store integration results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: active-support-timezone
+          path: |
+            test-results/
+            coverage/
+          retention-days: 14
+
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  yardoc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: cimg/ruby:3.3
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUNDLE_FROZEN: 'true'
+      BUNDLE_PATH: vendor/bundle
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install locked dependencies
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
+          gem install bundler -v 4.0.23 --no-document
+          bundle _4.0.23_ install
+      - name: Generate YARD documentation
+        run: bundle exec yardoc -o yardoc
+      - name: Store documentation
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: yardoc
+          path: yardoc/
+          if-no-files-found: error
+          retention-days: 14
+
+  upload_coverage:
+    name: upload-coverage
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: cimg/ruby:3.3
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUNDLE_FROZEN: 'true'
+      BUNDLE_PATH: vendor/bundle
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install locked dependencies
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git ls-files --error-unmatch lib/redis-objects-periodical.rb >/dev/null
+          gem install bundler -v 4.0.23 --no-document
+          bundle _4.0.23_ install
+      - name: Download coverage merge inputs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: simplecov-ruby-*
+          path: tmp/simplecov-results
+      - name: Collate all three Ruby results
+        run: |
+          bundle exec ruby -e '
+            require "simplecov"
+            require "simplecov_json_formatter"
+
+            resultset_files = %w[3.3 3.4 4.0].map do |version|
+              "tmp/simplecov-results/simplecov-ruby-#{version}/resultset.json"
+            end
+            missing = resultset_files.reject { |file| File.file?(file) }
+            abort("Missing coverage results: #{missing.join(", ")}") unless missing.empty?
+
+            SimpleCov.collate(resultset_files, ignore_timeout: true) do
+              formatter SimpleCov::Formatter::JSONFormatter
+              coverage_dir "coverage"
+            end
+          '
+      - name: Store merged coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: merged-coverage
+          path: coverage/coverage.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Check Qlty authentication
+        id: qlty
+        env:
+          QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        run: |
+          if [ -n "$QLTY_COVERAGE_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "QLTY_COVERAGE_TOKEN is not set. Coverage is saved; skipping Qlty upload."
+          fi
+      - name: Publish coverage to Qlty
+        if: ${{ steps.qlty.outputs.available == 'true' }}
+        uses: qltysh/qlty-action/coverage@ebcd284bf32e36a030afe15f1e136c7be08b9506 # v2.5.0
+        with:
+          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+          files: coverage/coverage.json
+          skip-errors: false

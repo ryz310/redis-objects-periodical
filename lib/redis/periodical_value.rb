@@ -11,5 +11,5 @@ Redis::PERIODICALS.each do |periodical|
     include Redis::BaseValueObject
     include const_get("Redis::RecurringAtIntervals::#{periodical.capitalize}")
   end
-  Redis.const_set("#{periodical.capitalize}Value", new_class)
+  Redis.const_set(:"#{periodical.capitalize}Value", new_class)
 end
