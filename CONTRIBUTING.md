@@ -93,8 +93,14 @@ Both lockfiles select redis-objects 2.0.0. The regular suite therefore includes
 96 key-prefix examples: legacy/modern x six periods x four types x instance/global
 fields. They check literal expected keys and persisted Redis entries, using a
 fresh namespaced model per example and restoring the global prefix style afterward.
-These examples are excluded when running with redis-objects below 2.0.0; the
-gemspec still permits 1.x, but the locked CI matrix exercises 2.0.0.
+These examples run unconditionally in the locked 2.0.0 CI environment, so a
+missing `prefix_style` API fails the suite instead of silently excluding coverage.
+The gemspec still permits 1.x. When checking a separately prepared 1.x bundle,
+run the compatible specs explicitly, excluding the 2.x configuration spec:
+
+```sh
+docker compose run --rm ruby bundle exec rspec spec/lib/redis --exclude-pattern spec/lib/redis/objects_prefix_style_spec.rb
+```
 
 SimpleCov generates HTML and JSON coverage reports during specs. Workflow
 artifacts are kept for 14 days and include JUnit results, per-Ruby coverage,

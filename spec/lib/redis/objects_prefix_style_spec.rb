@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Redis::Objects, '.prefix_style',
-               if: Gem.loaded_specs.fetch('redis-objects').version >= Gem::Version.new('2.0.0') do
+RSpec.describe Redis::Objects, '.prefix_style' do
   period_suffixes = {
     annual: '2026',
     monthly: '2026-10',
