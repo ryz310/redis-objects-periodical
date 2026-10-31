@@ -11,6 +11,15 @@ class Redis
       # Moves registered fields without changing their payloads or replacing destinations.
       # @api private
       class Migrator
+        SUFFIXES = {
+          annual: /-?\d{4,}/,
+          monthly: /-?\d{4,}-\d{2}/,
+          weekly: /-?\d{4,}W\d{2}/,
+          daily: /-?\d{4,}-\d{2}-\d{2}/,
+          hourly: /-?\d{4,}-\d{2}-\d{2}T\d{2}/,
+          minutely: /-?\d{4,}-\d{2}-\d{2}T\d{2}:\d{2}/,
+        }.freeze
+
         MOVE_KEY = <<~LUA
           if redis.call('EXISTS', KEYS[1]) == 0 then return 0 end
           if redis.call('RENAMENX', KEYS[1], KEYS[2]) == 0 then return -1 end
@@ -21,8 +30,6 @@ class Redis
           @model = model
           @scan_count = scan_count
           @verbose = verbose
-          @legacy = model.redis_legacy_prefix
-          @modern = model.redis_modern_prefix
         end
 
         def call
@@ -39,35 +46,53 @@ class Redis
         private
 
         def migration_fields
-          @model.ancestors.reverse_each.with_object({}) do |ancestor, fields|
-            if ancestor.is_a?(Class) && ancestor.respond_to?(:redis_objects)
-              fields.merge!(ancestor.redis_objects)
-            end
+          migration_models.reverse_each.with_object({}) do |ancestor, fields|
+            fields.merge!(ancestor.redis_objects)
           end
+        end
+
+        def migration_models
+          @model.ancestors.select do |ancestor|
+            ancestor.is_a?(Class) && ancestor.respond_to?(:redis_objects)
+          end
+        end
+
+        def migration_prefixes
+          prefixes = migration_models.map do |ancestor|
+            [ancestor.redis_legacy_prefix, ancestor.redis_modern_prefix]
+          end
+          prefixes.uniq.reject { |legacy, modern| legacy == modern }
         end
 
         def migrate_fields(fields)
           connection = @model.redis_field_redis(fields.first.first)
-          patterns = fields.map do |name, options|
-            id_pattern = options[:global] ? '' : '.+'
-            /\A#{Regexp.escape(@legacy)}:#{id_pattern}:#{Regexp.escape(name.to_s)}(?::|\z)/
-          end
-          each_legacy_key(connection) do |key|
-            migrate_key(connection, key) if patterns.any? { |pattern| pattern.match?(key) }
+          patterns = fields.map { |name, options| field_pattern(name, options) }
+          migration_prefixes.each do |legacy, modern|
+            each_legacy_key(connection, legacy) do |key|
+              tail = key.delete_prefix("#{legacy}:")
+              migrate_key(connection, key, legacy, modern) if patterns.any? { |p| p.match?(tail) }
+            end
           end
         end
 
-        def each_legacy_key(connection, &)
+        def field_pattern(name, options)
+          id_pattern = options[:global] ? '' : '.*'
+          suffix = SUFFIXES[options[:periodical]]
+          ending = suffix ? ":#{suffix}" : ''
+          /\A#{id_pattern}:#{Regexp.escape(name.to_s)}#{ending}\z/m
+        end
+
+        def each_legacy_key(connection, legacy, &)
           cursor = '0'
           loop do
-            cursor, keys = connection.scan(cursor, match: "#{@legacy}:*", count: @scan_count)
+            cursor, keys = connection.scan(cursor, match: "#{legacy}:*", count: @scan_count)
             keys.each(&)
             break if cursor == '0'
           end
         end
 
-        def migrate_key(connection, key)
-          new_key = @modern + key.delete_prefix(@legacy)
+        def migrate_key(connection, key, legacy, modern)
+          new_key = modern + key.delete_prefix(legacy)
           result = connection.eval(MOVE_KEY, keys: [key, new_key])
           raise Conflict, "Migration destination already exists: #{new_key}" if result == -1
 
@@ -86,7 +111,6 @@ class Redis
         end
 
         return if @silence_warnings_as_redis_prefix_was_set_manually && @redis_prefix
-        return if redis_legacy_prefix == redis_modern_prefix
 
         Migrator.new(self, scan_count, verbose).call
       end

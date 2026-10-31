@@ -13,7 +13,7 @@ Redis::PERIODICALS.each do |periodical| # rubocop:disable Metrics/BlockLength
       def #{periodical}_counter(name, options = {})
         options[:start] ||= 0
         options[:type]  ||= (options[:start]).zero? ? :increment : :decrement
-        redis_objects[name.to_sym] = options.merge(type: :counter)
+        redis_objects[name.to_sym] = options.merge(type: :counter, periodical: :#{periodical})
 
         mod = Module.new do
           define_method(name) do

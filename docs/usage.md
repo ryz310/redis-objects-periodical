@@ -120,11 +120,21 @@ upstream signature: `migrate_redis_legacy_keys(scan_count = 10, verbose = false)
 
 The override scans the model's automatic fields, including inherited declarations,
 ordinary Redis::Objects fields, and global fields, on each field's configured
-connection. If inherited fields also use a parent model's prefix, migrate that
-parent model as well.
-Explicit model prefixes and field `key:` options are unchanged in either style,
-so their keys are not renamed. Keys that do not match a declared automatic field
-are left alone.
+connection. It checks automatic prefixes for both the model and its ancestors:
+accessing an inherited field first can cache its declaring ancestor's prefix for
+the child's own fields too. Such keys keep that ancestor's namespace when migrated,
+even when the migration process has not populated its prefix cache. Migrate parent
+models as well to include fields shadowed by child declarations. Either migration
+order is supported. Retain the application's field access order after switching,
+since upstream prefix caching still depends on which field is accessed first.
+
+The complete field name and period suffix are matched; ordinary fields must end
+at the field name. Empty string IDs and IDs containing colons are accepted.
+Explicit model prefixes and field `key:` options do not change with the style.
+Custom keys extending an automatic field key, such as
+`entry0:7:metric:archive:2026-10-31`, are left alone because their complete suffix
+does not match that automatic field. Keys that do not match a declared automatic
+field are also left alone.
 
 Each rename uses an atomic Redis script with `RENAMENX` to avoid overwriting an
 existing destination. A collision raises
@@ -139,9 +149,10 @@ subsequent style switch to take effect. Existing periodical objects still retain
 their old keys; recreate them or restart application processes before resuming.
 Calling the migration while already configured as `:modern` raises an error.
 
-If different classes already share a legacy prefix and indistinguishable keys,
-the owning class cannot be recovered from those keys. Resolve that ownership
-before migration; this helper cannot separate data that has already collided.
+If different classes share a legacy prefix and indistinguishable keys, or a
+custom key exactly matches the full structure of an automatic key, ownership
+cannot be recovered from those key names. Resolve that ownership before migration;
+this helper cannot separate data that has already collided.
 
 ## Periods and key formats
 
