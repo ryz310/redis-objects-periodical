@@ -18,27 +18,16 @@
 ### Dependabot
 
 - [#288](https://github.com/ryz310/redis-objects-periodical/pull/288) Bump rubocop from 1.76.2 to 1.92.1 ([@ryz310](https://github.com/ryz310))
-
 - [#277](https://github.com/ryz310/redis-objects-periodical/pull/277) Bump rubocop-rspec from 3.6.0 to 3.10.2 ([@ryz310](https://github.com/ryz310))
-
 - [#281](https://github.com/ryz310/redis-objects-periodical/pull/281) Bump yard from 0.9.37 to 0.9.45 ([@ryz310](https://github.com/ryz310))
-
 - [#289](https://github.com/ryz310/redis-objects-periodical/pull/289) Bump rubocop-performance from 1.25.0 to 1.27.0 ([@ryz310](https://github.com/ryz310))
-
 - [#270](https://github.com/ryz310/redis-objects-periodical/pull/270) Bump timecop from 0.9.10 to 0.9.11 ([@ryz310](https://github.com/ryz310))
-
 - [#268](https://github.com/ryz310/redis-objects-periodical/pull/268) Bump rake from 13.3.0 to 13.4.2 ([@ryz310](https://github.com/ryz310))
-
 - [#273](https://github.com/ryz310/redis-objects-periodical/pull/273) Bump rspec from 3.13.1 to 3.13.2 ([@ryz310](https://github.com/ryz310))
-
 - [#286](https://github.com/ryz310/redis-objects-periodical/pull/286) Bump actions/checkout from 6.1.0 to 7.0.1 ([@ryz310](https://github.com/ryz310))
-
 - [#310](https://github.com/ryz310/redis-objects-periodical/pull/310) Bump rspec_junit_formatter from 0.6.2 to 0.8.0 ([@ryz310](https://github.com/ryz310))
-
 - [#311](https://github.com/ryz310/redis-objects-periodical/pull/311) Bump simplecov from 0.22.0 to 1.3.2 ([@ryz310](https://github.com/ryz310))
-
 - [#293](https://github.com/ryz310/redis-objects-periodical/pull/293) Bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 ([@ryz310](https://github.com/ryz310))
-
 - [#294](https://github.com/ryz310/redis-objects-periodical/pull/294) Bump actions/github-script from 8.0.0 to 9.0.0 ([@ryz310](https://github.com/ryz310))
 
 ### Misc
